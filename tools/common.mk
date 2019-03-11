@@ -343,11 +343,11 @@ endif
 # Use XMLLint to validate the model (if installed and accessible on the path.)
 validate: makedirs $(LAST_VALID_AT)
 
-$(LAST_VALID_AT) : $(XML_MODEL_FILE) $(XSD_SCHEMA_DIR)/XMMLGPU.xsd $(XSD_SCHEMA_DIR)/XMML.xsd
+$(LAST_VALID_AT) : $(XML_MODEL_FILE) $(XSD_SCHEMA_DIR)/XMMLGPU_EXT.xsd $(XSD_SCHEMA_DIR)/XMMLGPU.xsd $(XSD_SCHEMA_DIR)/XMML.xsd
 ifndef XMLLINT
 	$(warning "Warning: xmllint is not available, please install libxml2-utils to enable validation")
 else
-	$(XMLLINT) --noout $(XML_MODEL_FILE) --schema $(XSD_SCHEMA_DIR)/XMMLGPU.xsd && (touch $(LAST_VALID_AT))
+	$(XMLLINT) --noout $(XML_MODEL_FILE) --schema $(XSD_SCHEMA_DIR)/XMMLGPU_EXT.xsd && (touch $(LAST_VALID_AT))
 endif
 
 # Target to use xsltproc to generate all dynamic files.

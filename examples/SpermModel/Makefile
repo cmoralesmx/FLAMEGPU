@@ -52,7 +52,7 @@ EXAMPLE_BUILD_DIR := ./build
 # TRANSFORM_VISUALISTION_XSLT_DISABLED := 1
 
 # Optionally pass extra compile time flags
-# DEFINES ?= 
+DEFINES ?= -l/opt/cuda-9.2/samples/common/inc/ -l./include
 
 # Include the comman makefile from the tools directory.
 # If you wish to make a standalone project, you can simply replace this line with the contents of the common.mk file

@@ -41,6 +41,9 @@
 		<xs:complexContent>
 			<xs:extension base="xmml:environment_type">
 				<xs:sequence>
+          <!--FLAME GPU EXTENSIONS-->
+          <xs:element ref="definitions" maxOccurs="1" minOccurs="0" />
+          <!--END FLAME GPU EXTENSIONS-->
 					<xs:element ref="initFunctions" maxOccurs="1" minOccurs="0" />
 					<xs:element ref="exitFunctions" maxOccurs="1" minOccurs="0" />
 					<xs:element ref="stepFunctions" maxOccurs="1" minOccurs="0" />
@@ -49,6 +52,23 @@
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+  <!--FLAME GPU EXTENSIONS SECTION-->
+  <xs:complexType name="definition_type">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" maxOccurs="1" minOccurs="1" nillable="false" />
+      <xs:element name="value" type="xs:string" maxOccurs="1" minOccurs="1" nillable="false" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="definition" type="definition_type">
+  </xs:element>
+  <xs:complexType name="definitions_type">
+    <xs:sequence>
+      <xs:element ref="definition" minOccurs="1" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="definitions" type="definitions_type">
+  </xs:element>
+  <!--END FLAME GPU EXTENSIONS-->
 	<xs:complexType name="constants_type">
 		<xs:complexContent>
 			<xs:extension base="xmml:constants_type">

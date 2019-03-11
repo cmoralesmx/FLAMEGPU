@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<gpu:xmodel xmlns:gpu="http://www.dcs.shef.ac.uk/~paul/XMMLGPU" xmlns="http://www.dcs.shef.ac.uk/~paul/XMML">
+<gpu:xmodel xmlns:gpu="http://www.dcs.shef.ac.uk/~paul/XMMLGPU_EXT" xmlns="http://www.dcs.shef.ac.uk/~paul/XMML">
   <name>Sperm Model</name>
   <gpu:environment>
 	<gpu:constants>
@@ -29,8 +29,8 @@
       <gpu:variable>
         <type>float</type>
         <name>Const_SpermFertileLifetime</name>
-         <description>Mean total life in seconds of fertile sperm, if capacitated after this time, will not be able to penetrate oocyte</description>
-        <defaultValue>(13 * 3600)</defaultValue>
+         <description>Mean total life in seconds of fertile sperm, if capacitated after this time, will not be able to penetrate oocyte. Default (13 * 3600)</description>
+        <defaultValue>46800</defaultValue>
       </gpu:variable>
   
       <gpu:variable>
@@ -559,7 +559,7 @@
         <initialState>pre_initial_state</initialState>
       </states>
       <gpu:type>continuous</gpu:type>
-      <gpu:bufferSize>(MAX_NO_OF_SPERM * MAX_NO_OF_UNIQUE_ENVIRONMENTS)</gpu:bufferSize>
+      <gpu:bufferSize>10000</gpu:bufferSize>
 	</gpu:xagent>
 	<gpu:xagent>
       <name>Oocyte</name>
@@ -614,7 +614,7 @@
         <initialState>passive</initialState>
       </states>
       <gpu:type>continuous</gpu:type>
-      <gpu:bufferSize>(MAX_NO_OF_OOCYTES * MAX_NO_OF_UNIQUE_ENVIRONMENTS)</gpu:bufferSize>
+      <gpu:bufferSize>20</gpu:bufferSize>
     </gpu:xagent>
   </xagents>
   <messages>
@@ -644,7 +644,7 @@
         </gpu:variable>
       </variables>
       <gpu:partitioningNone></gpu:partitioningNone>
-      <gpu:bufferSize>(MAX_NO_OF_OOCYTES * MAX_NO_OF_UNIQUE_ENVIRONMENTS)</gpu:bufferSize>
+      <gpu:bufferSize>10</gpu:bufferSize>
     </gpu:message>
   </messages>
   <layers>
