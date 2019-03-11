@@ -76,20 +76,20 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Console|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>$(ProjectDir)include;$(NVCUDASAMPLES7_0_ROOT)\common\inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(NVCUDASAMPLES9_2_ROOT)\common\inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Visualisation|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>$(ProjectDir)include;$(NVCUDASAMPLES7_0_ROOT)\common\inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(NVCUDASAMPLES9_2_ROOT)\common\inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Console|x64'">
     <OutDir>..\..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>$(ProjectDir)include;$(NVCUDASAMPLES7_0_ROOT)\common\inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(NVCUDASAMPLES9_2_ROOT)\common\inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Visualisation|x64'">
     <OutDir>..\..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IncludePath>$(ProjectDir)include;$(NVCUDASAMPLES7_0_ROOT)\common\inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(NVCUDASAMPLES9_2_ROOT)\common\inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Console|x64'">
     <ClCompile>

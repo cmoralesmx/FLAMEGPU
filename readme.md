@@ -1,3 +1,12 @@
+# SpermModel an Agent-Based Model of spermatozoa behaviour  
+
+For a succesfull compilation, nVIDIA CUDA SDK 9.2 examples must be installed.  
+This dependency will change in future releases to align with upstream dependencies only.  
+
+This is project is a work in progress.  
+
+The original Flame GPU readme follows ...  
+
 # FLAME GPU
 
 http://www.flamegpu.com
