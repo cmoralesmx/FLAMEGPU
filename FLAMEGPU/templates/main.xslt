@@ -11,11 +11,18 @@
 #include &lt;string.h&gt;
 #include &lt;sys/stat.h&gt;
 #include &lt;errno.h&gt;
+#include &lt;inttypes.h&gt;
 #ifdef VISUALISATION
 #include &lt;GL/glew.h&gt;
 #include &lt;GL/glut.h&gt;
 #endif
 #include "header.h"
+
+#ifdef _WIN32
+#define int_64 __int64
+#else
+#define int_64 int64_t
+#endif
 
 #if defined(PROFILE)
 unsigned int g_profile_colour_id = 0;
@@ -455,7 +462,7 @@ extern "C" void setSimulationDescription(const char * desc) {
   cudaThreadSynchronize();
   //sdkStopTimer(&amp;timer);
     //float accurateRunTime = sdkGetTimerValue(&amp;timer);
-    __int64 simulationRunTime = 999; //(__int64)lroundf(accurateRunTime);
+    int_64 simulationRunTime = 999; //(int_64)lroundf(accurateRunTime);
 
     /*int totalSeconds = (int)floor(accurateRunTime / (float)1000);
     int totalMinutes =  (int)floor(totalSeconds / (float)60);

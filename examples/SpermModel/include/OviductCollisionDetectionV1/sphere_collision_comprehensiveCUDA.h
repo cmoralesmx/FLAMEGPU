@@ -5,12 +5,12 @@
 
 /*
 Sphere Sweeping Collision Detection Algorithm based on 
-J. Rouwé. (2003, May) Collision detection with swept spheres and ellipsoids. 
+J. Rouwe. (2003, May) Collision detection with swept spheres and ellipsoids. 
 [Online]. Available: http://www.jrouwe.nl/sweptellipsoid/SweptEllipsoid.pdf
 */
 
 #include "float.h"
-#include "common/common.h"
+#include "Common/common.h"
 #include "OviductCollisionDetectionV1/collision_detection_header.h"
 #include "Model3DCodeCUDA.h"
 

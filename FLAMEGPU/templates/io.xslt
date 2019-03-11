@@ -16,6 +16,7 @@
 #include &lt;algorithm&gt;
 #include &lt;string&gt;
 #include &lt;vector&gt;
+#include &lt;inttypes.h&gt;
 
 <!-- If there are any json graphs, include the appropriate headers and suppress some errors -->
 <xsl:if test="//gpu:staticGraph/gpu:loadFromFile/gpu:json">
@@ -32,7 +33,15 @@
 
 #ifdef _WIN32
 #define strtok_r strtok_s
+#define int_64 __int64
+#define fseek64 _fseeki64
+#define ftell64 _ftelli64
+#else
+#define int_64 int64_t
+#define fseek64 fseeko64
+#define ftell64 ftello64
 #endif
+
 
 // include header
 #include "header.h"
@@ -1427,8 +1436,8 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
 
   //#include &lt;cutil_math.h&gt;
   #include &lt;time.h&gt;
-  extern "C" int __cdecl _fseeki64(FILE *, __int64, int);
-  extern "C" __int64 __cdecl _ftelli64(FILE *);
+  extern "C" int __cdecl fseek64(FILE *, int_64, int);
+  extern "C" int_64 __cdecl ftell64(FILE *);
 
   #pragma region Variables
 
@@ -1439,8 +1448,8 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   int fileNumberCounter = 0;
   const int MAX_FILE_SIZE = 2000000000;
 
-  __int64 iterationOffsetLocation = -1;
-  //__int64* iterationOffsetTable = NULL;
+  int_64 iterationOffsetLocation = -1;
+  //int_64* iterationOffsetTable = NULL;
 
 
   #pragma endregion
@@ -1461,32 +1470,32 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   }
 
   void ToNext4ByteBoundary() {
-  __int64 pt = _ftelli64(file);
-  __int64 offset = pt % 4;
+  int_64 pt = ftell64(file);
+  int_64 offset = pt % 4;
   if (offset > 0) {
-  _fseeki64(file, 4-offset, SEEK_CUR);
+  fseek64(file, 4-offset, SEEK_CUR);
   }
   }
 
   void ToNext8ByteBoundary() {
-  __int64 pt = _ftelli64(file);
-  __int64 offset = pt % 8;
+  int_64 pt = ftell64(file);
+  int_64 offset = pt % 8;
   if (offset > 0) {
-  _fseeki64(file, 8-offset, SEEK_CUR);
+  fseek64(file, 8-offset, SEEK_CUR);
   }
   }
 
   void ToNext16ByteBoundary() {
-  __int64 pt = _ftelli64(file);
-  __int64 offset = pt % 16;
+  int_64 pt = ftell64(file);
+  int_64 offset = pt % 16;
   if (offset > 0) {
-  _fseeki64(file, 16-offset, SEEK_CUR);
+  fseek64(file, 16-offset, SEEK_CUR);
   }
   }
 
   void EnsureFileSize(char* outputpath) {
-  _fseeki64(file, 0, SEEK_END);
-  __int64 pos = _ftelli64(file);
+  fseek64(file, 0, SEEK_END);
+  int_64 pos = ftell64(file);
   if (pos > MAX_FILE_SIZE) {
   fclose(file);
   fileNumberCounter++;
@@ -1507,11 +1516,11 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   void writeFlameBinaryHeader(int noOfRecords, const char* simulationDescription, const char* variantDescription, int repetitionNo) {
   char isCompressed = 0;
   int noOfAgentTypes = <xsl:value-of select="count(gpu:xmodel/xmml:xagents/gpu:xagent)"></xsl:value-of>;
-  __int64 simulationDateTime = (__int64)time(NULL);
-  __int64 simulationRunTime = 0;
+  int_64 simulationDateTime = (int_64)time(NULL);
+  int_64 simulationRunTime = 0;
   fwrite(&amp;isCompressed, sizeof(char), 1, file);
-  fwrite(&amp;simulationDateTime, sizeof(__int64), 1, file);
-  fwrite(&amp;simulationRunTime, sizeof(__int64), 1, file);
+  fwrite(&amp;simulationDateTime, sizeof(int_64), 1, file);
+  fwrite(&amp;simulationRunTime, sizeof(int_64), 1, file);
   fwrite(&amp;noOfAgentTypes, sizeof(int), 1, file);
   fwrite(&amp;noOfRecords, sizeof(int), 1, file);
   fwrite(&amp;repetitionNo, sizeof(int), 1, file);
@@ -1562,19 +1571,19 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   writeFlameBinaryHeader(noOfRecords, simulationDescription, variantDescription, repetitionNo);
   writeFlameBinaryAgentHeaders();
   ToNext16ByteBoundary();
-  iterationOffsetLocation = _ftelli64(file);
-  //iterationOffsetTable = (__int64*)malloc((noOfRecords) * sizeof(__int64));
+  iterationOffsetLocation = ftell64(file);
+  //iterationOffsetTable = (int_64*)malloc((noOfRecords) * sizeof(int_64));
 
-  _fseeki64(file, sizeof(__int64) * (noOfRecords), SEEK_CUR);
+  fseek64(file, sizeof(int_64) * (noOfRecords), SEEK_CUR);
   }
 
-  void closeFlameBinaryOutputFile(int noOfRecords, __int64 simulationRunTime) {
+  void closeFlameBinaryOutputFile(int noOfRecords, int_64 simulationRunTime) {
   if (file != NULL) {
-  _fseeki64(file, sizeof(char) + sizeof(__int64), SEEK_SET);
-  fwrite(&amp;simulationRunTime, sizeof(__int64), 1, file);
-  //_fseeki64(file, iterationOffsetLocation, SEEK_SET);
+  fseek64(file, sizeof(char) + sizeof(int_64), SEEK_SET);
+  fwrite(&amp;simulationRunTime, sizeof(int_64), 1, file);
+  //fseek64(file, iterationOffsetLocation, SEEK_SET);
   //writeIterationOffsetTable(noOfRecords);
-  _fseeki64(file, 0, SEEK_END);
+  fseek64(file, 0, SEEK_END);
   fclose(file);
   file = NULL;
   }
@@ -1596,9 +1605,9 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
 
   ToNext4ByteBoundary();
   //fwrite(&amp;iteration_number, sizeof(int), 1, file);
-  __int64 chunkOffsetPosition = _ftelli64(file);
+  int_64 chunkOffsetPosition = ftell64(file);
 
-  _fseeki64(file, chunkOffsetPosition, SEEK_SET);
+  fseek64(file, chunkOffsetPosition, SEEK_SET);
   //iterationOffsetTable[iteration_number] = chunkOffsetPosition;
 
   int chunkSize = 0;
@@ -1621,15 +1630,15 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
     </xsl:for-each>
     currentAgentTypeID++;
   </xsl:for-each>
-  chunkSize = (int)(_ftelli64(file) - chunkOffsetPosition) - sizeof(int);
-  _fseeki64(file, chunkOffsetPosition, SEEK_SET);
+  chunkSize = (int)(ftell64(file) - chunkOffsetPosition) - sizeof(int);
+  fseek64(file, chunkOffsetPosition, SEEK_SET);
   fwrite(&amp;chunkSize, sizeof(int), 1, file);
   fwrite(&amp;noOfAgents, sizeof(int), 1, file);
 
-  _fseeki64(file, iterationOffsetLocation + (sizeof(__int64) * iteration_number), SEEK_SET);
-  fwrite(&amp;chunkOffsetPosition, sizeof(__int64), 1, file);
+  fseek64(file, iterationOffsetLocation + (sizeof(int_64) * iteration_number), SEEK_SET);
+  fwrite(&amp;chunkOffsetPosition, sizeof(int_64), 1, file);
 
-  _fseeki64(file, 0, SEEK_END);
+  fseek64(file, 0, SEEK_END);
   }
 
 
@@ -1651,10 +1660,10 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
     cudaMemcpy( h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, d_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, sizeof(xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list), cudaMemcpyDeviceToHost);
   </xsl:for-each>
 
-  _fseeki64(file, 0, SEEK_END);
+  fseek64(file, 0, SEEK_END);
   fwrite(&amp;iteration_number, sizeof(int), 1, file);
 
-  __int64 chunkOffsetPosition = _ftelli64(file);
+  int_64 chunkOffsetPosition = ftell64(file);
   int chunkSize = 0;
   fwrite(&amp;chunkSize, sizeof(int), 1, file);
   int noOfAgents = 0;
@@ -1675,8 +1684,8 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
     </xsl:for-each>
     currentAgentTypeID++;
   </xsl:for-each>
-  chunkSize = (int)(_ftelli64(file) - chunkOffsetPosition) - sizeof(int);
-  _fseeki64(file, chunkOffsetPosition, SEEK_SET);
+  chunkSize = (int)(ftell64(file) - chunkOffsetPosition) - sizeof(int);
+  fseek64(file, chunkOffsetPosition, SEEK_SET);
   fwrite(&amp;chunkSize, sizeof(int), 1, file);
   fwrite(&amp;noOfAgents, sizeof(int), 1, file);
 

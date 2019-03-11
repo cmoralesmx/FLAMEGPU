@@ -192,7 +192,7 @@ __device__ int4 calculate_slice_range(const int agentId, const int currentSegmen
 			
 			while (segment + 1 < NO_OF_SEGMENTS_MINUS_ONE) {
 				++segment;
-				plane = -getSlicePlane(segment);
+				plane = -1.0f * getSlicePlane(segment);
 				planeDot = dot(make_float3(plane), directionDelta);
 				distanceToPlane = calculateDistanceFromPointToPlane(plane, oldPosition);
 
@@ -270,7 +270,7 @@ __device__ int4 calculate_slice_range(const int agentId, const int currentSegmen
  * Tests for an intersection with the end cap at the end of the mesh. 
  */
 __device__ IntersectionResult resolve_end_cap_collisions(const float3 &oldPosition, const float3 &direction, const float distance_to_move, const float radius, float4 &collisionPlane) {
-	float4 plane = -getSlicePlane(NO_OF_SLICES_MINUS_ONE);
+	float4 plane = -1.0 * getSlicePlane(NO_OF_SLICES_MINUS_ONE);
 	IntersectionResult result = testIntersectionPlaneSphere(plane, oldPosition, direction, distance_to_move, radius);
 
 	if (result.intersectionOccurred == INTERSECTION_OCCURRED) {

@@ -20,9 +20,9 @@
 
 #include <header.h>
 #include <helper_math.h>
-#include "OviductCollisionDetectionV1\collision_detectionCUDA.h"
-#include "Common\common.h"
-#include "Common\cuda_matrix.h"
+#include "OviductCollisionDetectionV1/collision_detectionCUDA.h"
+#include "Common/common.h"
+#include "Common/cuda_matrix.h"
 
 #define TOTAL_NO_OF_OOCYTES xmachine_memory_Oocyte_MAX
 

@@ -19,6 +19,13 @@
 #define GLM_FORCE_NO_CTOR_INIT
 #define GLM_FORCE_PURE
 #include &lt;glm/glm.hpp&gt;
+#include &lt;inttypes.h&gt;
+
+#ifdef _WIN32
+#define int_64 __int64
+#else
+#define int_64 int64_t
+#endif
 
 /* General standard definitions */
 //Threads per block (agents per block)
@@ -889,7 +896,7 @@ extern "C" void saveIterationDataToCopyOnly(<xsl:for-each select="gpu:xmodel/xmm
 extern "C" void createBinaryOutputFile(char* outputpath);
 extern "C" void closeBinaryOutputFile();
 extern "C" void createFlameBinaryOutputFile(char* outputpath, int noOfRecords, const char* simulationDescription, int repetitionNo);
-extern "C" void closeFlameBinaryOutputFile(int noOfIterations, __int64 simulationRunTime);
+extern "C" void closeFlameBinaryOutputFile(int noOfIterations, int_64 simulationRunTime);
 
 /* Custom Simulation Types */
 extern "C" void runCustomSimulationType(int itterations, int repetitionNo, int writeout_interval);
