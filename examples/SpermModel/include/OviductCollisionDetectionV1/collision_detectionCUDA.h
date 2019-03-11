@@ -256,7 +256,7 @@ __device__ int4 calculate_slice_range(const int agentId, const int currentSegmen
 	/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
 		printf("[%d] slice range identified by legacy method:[%d, %d], by new method:[%d %d]\n", agentId, rangeLegacy.x, rangeLegacy.y, rangeNew.x, rangeNew.y);
 	}*/
-	return make_int4(rangeLegacy.x, rangeLegacy.y, rangeNew.x, rangeNew.y);
+	return make_int4(max(rangeLegacy.x - 2, 0) , min(rangeLegacy.y + 2, NO_OF_SEGMENTS_MINUS_ONE), rangeNew.x, rangeNew.y);
 }
 
 
@@ -441,8 +441,8 @@ __device__ CollisionResult resolve_environment_collisions(const int agentId, con
 	int4 sliceRange = calculate_slice_range(agentId, currentSegment, oldPosition, direction, extDistance, radius + RADIUS_BUFFER);
 //sliceRange.x = 0;
 //sliceRange.y = 10;
-	if (agentId == 2937 || agentId == 3600 || agentId == 4980)
-		printf("legacy range:[%i, %i] new range:[%i, %i]\n", sliceRange.x, sliceRange.y, sliceRange.z, sliceRange.w);
+	//if (agentId == 2937 || agentId == 3600 || agentId == 4980)
+		//printf("legacy range:[%i, %i] new range:[%i, %i]\n", sliceRange.x, sliceRange.y, sliceRange.z, sliceRange.w);
 
 	int2 range = make_int2(sliceRange.x, sliceRange.y);
 	rslt.sliceRange = range;
