@@ -256,7 +256,18 @@ __device__ int4 calculate_slice_range(const int agentId, const int currentSegmen
 	/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
 		printf("[%d] slice range identified by legacy method:[%d, %d], by new method:[%d %d]\n", agentId, rangeLegacy.x, rangeLegacy.y, rangeNew.x, rangeNew.y);
 	}*/
-	return make_int4(max(rangeLegacy.x - 2, 0) , min(rangeLegacy.y + 2, NO_OF_SEGMENTS_MINUS_ONE), rangeNew.x, rangeNew.y);
+	int2 padding = make_int2(0, 0);
+
+	if (rangeLegacy.y - rangeLegacy.x < 5) {
+	    if (forward_motion) {
+	        padding.x = 5;
+		padding.y = 20;
+	    } else {
+		padding.x = 20;
+		padding.y = 5;
+	    }
+	}
+	return make_int4(max(rangeLegacy.x - padding.x, 0) , min(rangeLegacy.y + padding.y, NO_OF_SEGMENTS_MINUS_ONE), rangeNew.x, rangeNew.y);
 }
 
 

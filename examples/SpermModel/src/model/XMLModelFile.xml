@@ -171,15 +171,15 @@
 	<gpu:definitions>
        <gpu:definition>
         <gpu:name>MAX_NO_OF_UNIQUE_ENVIRONMENTS</gpu:name>
-        <gpu:value>1</gpu:value>
+        <gpu:value>10</gpu:value>
       </gpu:definition>
        <gpu:definition>
         <gpu:name>MAX_NO_OF_SPERM</gpu:name>
-        <gpu:value>10000</gpu:value>
+        <gpu:value>30000</gpu:value>
       </gpu:definition>
        <gpu:definition>
         <gpu:name>MAX_NO_OF_OOCYTES</gpu:name>
-        <gpu:value>20</gpu:value>
+        <gpu:value>60</gpu:value>
       </gpu:definition>
       <gpu:definition>
         <gpu:name>ACTIVATION_STATE_DEAD</gpu:name>
@@ -559,7 +559,7 @@
         <initialState>pre_initial_state</initialState>
       </states>
       <gpu:type>continuous</gpu:type>
-      <gpu:bufferSize>10000</gpu:bufferSize>
+      <gpu:bufferSize>32768</gpu:bufferSize>
 	</gpu:xagent>
 	<gpu:xagent>
       <name>Oocyte</name>
@@ -614,7 +614,7 @@
         <initialState>passive</initialState>
       </states>
       <gpu:type>continuous</gpu:type>
-      <gpu:bufferSize>20</gpu:bufferSize>
+      <gpu:bufferSize>64</gpu:bufferSize>
     </gpu:xagent>
   </xagents>
   <messages>
@@ -644,7 +644,7 @@
         </gpu:variable>
       </variables>
       <gpu:partitioningNone></gpu:partitioningNone>
-      <gpu:bufferSize>10</gpu:bufferSize>
+      <gpu:bufferSize>64</gpu:bufferSize>
     </gpu:message>
   </messages>
   <layers>

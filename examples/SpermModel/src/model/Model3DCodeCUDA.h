@@ -6,8 +6,11 @@
 // Curve data path: D:\_WIP_Data\Dev_Models\Pig\Base_Scale\test\muestra_2128_complete_scaled_x100_resampled_rotated2.crv
 // Transformations data path: D:\_WIP_Data\Dev_Models\Pig\Base_Scale\test\transformations.trx
 
-
+#ifdef _WIN32 
 #define INCLUDE_DATA_FILE "D:\\_WIP_Data\\Dev_Models\\Pig\\Base_Scale\\17th_attempt\\export_cuda\\"
+#else
+#define INCLUDE_DATA_FILE "./"
+#endif
 
 #define NO_OF_SLICES 1201
 #define NO_OF_SLICES_MINUS_ONE 1200
