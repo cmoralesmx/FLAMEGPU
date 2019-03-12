@@ -86,7 +86,7 @@ INCLUDE_DIRS := \
 	$(SRC_MODEL) \
 	$(SRC_DYNAMIC) \
 	$(SRC_VISUALISATION) \
-	/opt/cuda-9.2/samples/common/inc/ \
+	$(CUDA_SDK)/common/inc/ \
 	include/
 
 # Include directories specific to visualisation builds
