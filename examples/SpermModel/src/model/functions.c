@@ -38,7 +38,7 @@ struct CollisionDetails {
 __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 
 	char data[500];
-	/*	The dat path is loaded from the 0.XML file */
+	/*	The data path is loaded from the 0.XML file */
 	int pathLength = getDataPath(data);
 
 	if (pathLength == 0) {
@@ -64,7 +64,9 @@ __FLAME_GPU_STEP_FUNC__ void updateIterationNo() {
 	set_currentIterationNo(&iter);
 }
 
+#ifdef _MSC_VER
 #pragma region Helper Functions
+#endif
 
 /*Calculates movement speed for a single step*/
 __device__ float GetSingleStepProgressiveVelocity(xmachine_memory_Sperm* sperm) {
@@ -162,9 +164,13 @@ __device__ float3 getOocytePosition(xmachine_message_oocytePosition* oocyte) {
 	return make_float3(oocyte->positionX, oocyte->positionY, oocyte->positionZ);
 }
 
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
+#ifdef _MSC_VER
 #pragma region Sperm Angular Rotation Functions
+#endif
 
 // maxAngleDeg is angle between normal and cone radius
 __device__ void ConicRotation(Matrix &spermMatrix, float maxAngleDeg, RNG_rand48* rand48) {
@@ -213,9 +219,13 @@ __device__ void HalfConicReflection(Matrix &spermMatrix, float3 collisionPlaneNo
 	}
 }
 
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
+#ifdef _MSC_VER
 #pragma region Common Functions
+#endif
 
 /* Attach a sperm to oocyte - bind to the closest point between the sperm and the oocyte */
 __device__ void AttachSpermToOocyte(xmachine_memory_Sperm* sperm, Matrix& spermMatrix, float3 oocytePosition, int oocyteCollisionID) {
@@ -350,11 +360,15 @@ __device__ bool ResolveCollisions(xmachine_memory_Sperm* sperm, Matrix& spermMat
 
 }
 
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
 #define INITIAL_DISTRIBUTION_ANGLE 90
 
+#ifdef _MSC_VER
 #pragma region Sperm Functions
+#endif
 
 //Distribute Sperm on walls of current section - called at start of simulation only
 //Removed random component for consistent deployment - direction calculated based on direction from 
@@ -374,14 +388,14 @@ __FLAME_GPU_FUNC__ int Sperm_Init(xmachine_memory_Sperm* sperm, RNG_rand48* rand
 	float spermNoRnd = (float)sperm->spermNo / (float)MAX_NO_OF_SPERM;
 
 	MatrixRotatePitch(m, TO_RADIANS(90 - (INITIAL_DISTRIBUTION_ANGLE*0.5f) + (spermNoRnd * INITIAL_DISTRIBUTION_ANGLE)));
-	MatrixRotateAbsoluteAnyAxis(m, TO_RADIANS(spermNoRnd * 45), currentSegmentNormal);
+	MatrixRotateAbsoluteAnyAxis(m, TO_RADIANS(spermNoRnd * 360), currentSegmentNormal);
 
 	float3 direction = MatrixGetDirection(m);
 
 	CollisionDetails collisionDetails;
 
 	/* Identify Collisions */
-	ResolveCollisions(sperm, spermMatrix, 30, direction, collisionDetails, rand48);
+	ResolveCollisions(sperm, spermMatrix, 300, direction, collisionDetails, rand48);
 
 	
 	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED)) {
@@ -441,7 +455,9 @@ __device__ bool HandleSurfaceInteraction(xmachine_memory_Sperm* sperm, Matrix& s
 	return resolved;
 }
 
+#ifdef _MSC_VER
 #pragma region Progressive Movement
+#endif
 
 /*Moves forward a single iteration*/
 __device__ bool SingleProgressiveMovement(xmachine_memory_Sperm* sperm, Matrix& spermMatrix, RNG_rand48* rand48, float distanceToMove) {
@@ -494,9 +510,13 @@ __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm, x
 	return 0;
 }
 
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
+#ifdef _MSC_VER
 #pragma region Non Progressive Movement
+#endif
 /*MOves non-progressively */
 __device__ bool SingleNonProgressiveMovement(xmachine_memory_Sperm* sperm, Matrix& spermMatrix, RNG_rand48* rand48, float distanceToMove) {
 
@@ -542,7 +562,9 @@ __FLAME_GPU_FUNC__ int Sperm_NonProgressiveMovement(xmachine_memory_Sperm* sperm
 
 }
 
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
 /*Determins if an agent should detach from the oviduct*/
 __FLAME_GPU_FUNC__ int Sperm_DetachFromEpithelium(xmachine_memory_Sperm* sperm, RNG_rand48* rand48) {
@@ -595,10 +617,13 @@ __FLAME_GPU_FUNC__ int Sperm_RegulateState(xmachine_memory_Sperm* sperm) {
 	return 0;
 }
 
-
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
+#ifdef _MSC_VER
 #pragma region Oocyte Functions
+#endif
 /*Reports the position of the oocyte*/
 __FLAME_GPU_FUNC__ int Oocyte_ReportPosition(xmachine_memory_Oocyte* oocyte, xmachine_message_oocytePosition_list* oocytePosition_messages){
 	if (OocyteOutOfBounds()) { return 0; }
@@ -607,7 +632,9 @@ __FLAME_GPU_FUNC__ int Oocyte_ReportPosition(xmachine_memory_Oocyte* oocyte, xma
 	return 0;
 }
 
+#ifdef _MSC_VER
 #pragma endregion
+#endif
   
 
 

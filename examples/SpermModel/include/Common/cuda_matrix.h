@@ -41,9 +41,9 @@ __device__ float VectorGetAngleBetween(float3 v1, float3 v2, float3 &outAxis);
 
 
 
-
+#ifdef _MSC_VER
 #pragma region Property Accessor Functions
-
+#endif
 
 /// <summary>
 /// Return the direction vector of the matrix
@@ -114,9 +114,13 @@ __device__ float VectorGetAngleBetween(float3 v1, float3 v2, float3 &outAxis) {
 	}
 }
 
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
+#ifdef _MSC_VER
 #pragma region Matrix Functions
+#endif
 
 __device__ Matrix make_matrix(float m0, float m1, float m2, float m3, 
 	float m4, float m5, float m6, float m7, 
@@ -521,6 +525,8 @@ __device__ void MatrixInverse(Matrix &mat) {
 
 }*/
 
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
 #endif

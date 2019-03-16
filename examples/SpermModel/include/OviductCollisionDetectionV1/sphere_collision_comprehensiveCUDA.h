@@ -15,19 +15,20 @@ J. Rouwe. (2003, May) Collision detection with swept spheres and ellipsoids.
 #include "Model3DCodeCUDA.h"
 
 
-
+#ifdef _MSC_VER
 #pragma region Intersection Definitions
+#endif
 
-
-
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
 __device__ IntersectionResult testIntersectionPlaneSphere(const Plane &plane, const float3 &oldPosition, const float3 &direction, float distance_to_move, const float radius);
 __device__ IntersectionResult testIntersectionTriSphere(const TrianglePlane &tp, const float3 &sphere_centre, const float sphere_radius, const float3 &sphereVel);
 
-
+#ifdef _MSC_VER
 #pragma region Plane Functions
-
+#endif
 
 
 /*__device__ void	GetBasisVectors(const Plane &plane, float3 &outU, float3 &outV) { 
@@ -52,11 +53,14 @@ __device__ float3 ConvertPlaneToWorld(const Plane &plane, const float3 &inU, con
 	return (inU * inPoint.x + inV * inPoint.y - make_float3(plane) * plane.w);
 }
 
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
 
-
+#ifdef _MSC_VER
 #pragma region inner calculation functions
+#endif
 
 
 /*
@@ -387,8 +391,9 @@ __device__ bool SweptCircleTriangleEdgeVertexIntersect(const TrianglePlane &tp, 
 	return true;
 }
 
+#ifdef _MSC_VER
 #pragma endregion
-
+#endif
 
 
 __device__ bool PlaneSweptSphereIntersect(const Plane &inPlane, const float3 &inBegin, const float3 &inDelta, const float inRadius, float &outT1, float &outT2)
