@@ -154,14 +154,14 @@
         <type>float</type>
         <name>Const_ProgressiveVelocity</name>
          <description>Progressive Average Path Velocity (VAP) um / s</description>
-        <defaultValue>52</defaultValue>
+        <defaultValue>90.6</defaultValue>
       </gpu:variable>
       
        <gpu:variable>
         <type>float</type>
         <name>Const_NonProgressiveVelocity</name>
          <description>Non-Progressive Straight Line Velocity (VSL)</description>
-        <defaultValue>19</defaultValue>
+        <defaultValue>72.3</defaultValue>
       </gpu:variable>
             
     </gpu:constants>
@@ -175,11 +175,11 @@
       </gpu:definition>
        <gpu:definition>
         <gpu:name>MAX_NO_OF_SPERM</gpu:name>
-        <gpu:value>30000</gpu:value>
+        <gpu:value>32768</gpu:value>
       </gpu:definition>
        <gpu:definition>
         <gpu:name>MAX_NO_OF_OOCYTES</gpu:name>
-        <gpu:value>60</gpu:value>
+        <gpu:value>64</gpu:value>
       </gpu:definition>
       <gpu:definition>
         <gpu:name>ACTIVATION_STATE_DEAD</gpu:name>
