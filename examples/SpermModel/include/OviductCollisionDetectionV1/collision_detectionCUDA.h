@@ -122,153 +122,18 @@ __device__ int calculate_slice_range_one_way(const int start, const int end, con
 
 
 /*
- * Calculates the potential range of slices which the current agent movement will intersect. Initially, a 1 segment buffer is established
+ * Calculates the potential range of slices which the current agent movement will intersect. Initially, a 2 segment buffer is established
  * then all previous and all following slices are evaluated until the optimal range is identified.
  */
-__device__ int4 calculate_slice_range(const int agentId, const int currentSegment, const float3 &oldPosition, const float3 &direction, const float distance_to_move, const float radius) {
+__device__ int2 calculate_slice_range(const int agentId, const int currentSegment, const float3 &oldPosition, const float3 &direction, const float distance_to_move, const float radius) {
 
-	int minSlice = max(currentSegment - 1, 0);
-	int maxSlice = currentSegment < (NO_OF_SEGMENTS_MINUS_ONE - 1) ? currentSegment + 2 : NO_OF_SEGMENTS_MINUS_ONE;
+	int minSlice = max(currentSegment - 2, 0);
+	int maxSlice = currentSegment < (NO_OF_SEGMENTS_MINUS_ONE - 2) ? currentSegment + 3 : NO_OF_SEGMENTS_MINUS_ONE;
 
 	minSlice = calculate_slice_range_one_way(minSlice, 0, oldPosition, direction, distance_to_move, radius);
 	maxSlice = calculate_slice_range_one_way(maxSlice, NO_OF_SEGMENTS_MINUS_ONE, oldPosition, direction, distance_to_move, radius); 
 
-	int2 rangeLegacy = make_int2(minSlice >= 0 ? minSlice : 0, maxSlice < NO_OF_SEGMENTS_MINUS_ONE ? maxSlice : NO_OF_SEGMENTS_MINUS_ONE);
-
-	int2 rangeNew = { currentSegment - 1, currentSegment + 1 };
-
-	float3 directionDelta = direction * distance_to_move;
-	float3 nextPosition = currentSegment + directionDelta;
-	float4 plane = getSlicePlane(currentSegment);
-	float planeDot = dot(make_float3(plane), directionDelta);
-	float dCurPosCurPlane = calculateDistanceFromPointToPlane(plane, oldPosition);
-	float dNexPosCurPlane = calculateDistanceFromPointToPlane(plane, nextPosition);
-	int forward_motion = 0;
-	
-	/*
-	we assume that by getting the slice plane using the current segment we will always get 
-	the lowest indexed slice. Based on this slice, we compare the distance to both positions, as follows
-	
-	 segment Id ->  0     1        x <- current Position
-	 slice Id-> 0      1      2	   o <- next Position
-				|      |      |
-	                 x---o	       a) forward movement, both positions are in different segments
-	                    x----o     b) forward movement, both positions are in the same segment
-	                 o---x         c) backward movement, both positions are in different segments
-				  o---x            d) backward movement, both positions are in the same segment
-	
-	a) distCurPosCurPlane < distNexPosCurPlane & distCurPosCurPlane < 0 & distNexPosCurPlane < 0
-	b) same pattern to a
-	c) sign(distCurPosCurPlane) != sign(distNextPosCurPlane) It does not matter which one is closer to the plane
-	d) distCurPosCurPlane > distNexPosCurPlane
-
-	Therefore, this comparison seems to be robust.
-
-	We could achieve the same comparison based on the sign of the displacement and the current plane's normal
-	Their signs will match if we the displacement is towards the highest indexed slice. 
-	However, this comparison would heavily depend on having matching signs on every axis.
-
-	I need to check the distance to current plane is negative as I am assuming.
-	*/
-
-	// if the displacement is not parallel to the current plane
-	
-	
-	if (planeDot == 0) {
-		/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
-			printf("[%d] The new method detected parallel displacement to the current plane, no more comparisons done.\n", agentId);
-		}*/
-	} else {
-		if (dCurPosCurPlane < dNexPosCurPlane && dCurPosCurPlane < 0 && dNexPosCurPlane < 0)
-			forward_motion = 1;
-			
-		/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
-			printf("[%d] (New method) Forward motion? %d\n", agentId, forward_motion);
-		}*/
-		int segment = currentSegment;
-		float distanceToPlane;
-		if (forward_motion) {
-			rangeNew.x = currentSegment; // minimum plane in collision range
-			// find the max slice the agent could displace to
-			
-			while (segment + 1 < NO_OF_SEGMENTS_MINUS_ONE) {
-				++segment;
-				plane = -1.0f * getSlicePlane(segment);
-				planeDot = dot(make_float3(plane), directionDelta);
-				distanceToPlane = calculateDistanceFromPointToPlane(plane, oldPosition);
-
-				if (planeDot == 0) {
-					/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
-						printf("[%d] Plane: %d norm:(%f,%f,%f) dist: %f is parallel to displ, quitting\n", agentId, segment, plane.x, plane.y, plane.z, distanceToPlane);
-					}*/
-					rangeNew.y = segment;
-					break;
-				}
-				else {
-					if (distanceToPlane > distance_to_move) {
-						/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
-							printf("[%d] Plane: %d norm:(%f,%f,%f) dist: %f is not within collision range, quitting\n", agentId, segment, plane.x, plane.y, plane.z, distanceToPlane);
-						}*/
-						break;
-					}
-					else {
-						/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
-							printf("[%d] Plane: %d norm:(%f,%f,%f) dist: %f is within range\n", agentId, segment, plane.x, plane.y, plane.z, distanceToPlane);
-						}*/
-						rangeNew.y = segment;
-					}
-				}
-			}
-		}
-		else {
-			rangeNew.y = min(currentSegment + 1, NO_OF_SEGMENTS_MINUS_ONE); // maximum plane in collision range
-			// find the min slice the agent could displace to
-
-			while (segment - 1 > 0) {
-				--segment;
-				plane = getSlicePlane(segment);
-				planeDot = dot(make_float3(plane), directionDelta);
-				distanceToPlane = calculateDistanceFromPointToPlane(plane, oldPosition);
-
-				if (planeDot == 0) {
-					/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
-						printf("[%d] Plane: %d norm:(%f,%f,%f) dist: %f is parallel to displ, quitting\n", agentId, segment, plane.x, plane.y, plane.z, distanceToPlane);
-					}*/
-					rangeNew.x = segment;
-					break;
-				}
-				else {
-					if (distanceToPlane > distance_to_move) {
-						/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
-							printf("[%d] Plane: %d norm:(%f,%f,%f) dist: %f is not within collision range, quitting\n", agentId, segment, plane.x, plane.y, plane.z, distanceToPlane);
-						}*/
-						break;
-					}
-					else {
-						/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
-							printf("[%d] Plane: %d norm:(%f,%f,%f) dist: %f is within range\n", agentId, segment, plane.x, plane.y, plane.z, distanceToPlane);
-						}*/
-						rangeNew.x = segment;
-					}
-				}
-			}
-		}
-	}
-	/*if (agentId == 2937 || agentId == 3600 || agentId == 4980) {
-		printf("[%d] slice range identified by legacy method:[%d, %d], by new method:[%d %d]\n", agentId, rangeLegacy.x, rangeLegacy.y, rangeNew.x, rangeNew.y);
-	}*/
-	int2 padding = make_int2(0, 0);
-
-	if (rangeLegacy.y - rangeLegacy.x < 5) {
-	    if (forward_motion) {
-	        padding.x = 5;
-		padding.y = 20;
-	    } else {
-		padding.x = 20;
-		padding.y = 5;
-	    }
-	}
-	return make_int4(max(rangeLegacy.x - padding.x, 0) , min(rangeLegacy.y + padding.y, NO_OF_SEGMENTS_MINUS_ONE), rangeNew.x, rangeNew.y);
+	return make_int2(minSlice >= 0 ? minSlice : 0, maxSlice < NO_OF_SEGMENTS_MINUS_ONE ? maxSlice : NO_OF_SEGMENTS_MINUS_ONE);
 }
 
 
@@ -455,7 +320,7 @@ __device__ CollisionResult resolve_environment_collisions(const int agentId, con
 
 	float extDistance = distance_to_move + (INTERSECTION_BUFFER);
 
-	int4 sliceRange = calculate_slice_range(agentId, currentSegment, oldPosition, direction, extDistance, radius + RADIUS_BUFFER);
+	int2 sliceRange = calculate_slice_range(agentId, currentSegment, oldPosition, direction, extDistance, radius + RADIUS_BUFFER);
 //sliceRange.x = 0;
 //sliceRange.y = 10;
 	//if (agentId == 2937 || agentId == 3600 || agentId == 4980)
