@@ -9,7 +9,6 @@
  */
 
 #include "helper_math.h"
-//#include "sphere_collisionCUDA.h"
 #include "OviductCollisionDetectionV1/sphere_collision_comprehensiveCUDA.h"
 #include "OviductCollisionDetectionV1/ModelTextureAccessCUDA.h"
 
@@ -25,7 +24,9 @@ __device__ CollisionResult resolve_environment_collisions(const int currentSegme
 * Returns NO_COLLISION otherwise.
 */
 
+#ifdef _MSC_VER
 #pragma region Slice Calculation Functions
+#endif
 
 /*
  * Determines the current segment of the oviduct. Sign distance test is performed against all slice planes within range.
@@ -271,11 +272,12 @@ __device__ int4 calculate_slice_range(const int agentId, const int currentSegmen
 }
 
 
-
+#ifdef _MSC_VER
 #pragma endregion
 
 
 #pragma region End Capping Collision Functions
+#endif
 
 /*
  * Tests for an intersection with the end cap at the end of the mesh. 
@@ -313,7 +315,9 @@ __device__ IntersectionResult resolve_start_cap_collisions(const float3 &oldPosi
 
 }
 
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
 
 //Modified from http://www.softsurfer.com/Archive/algorithm_0102/
@@ -337,8 +341,9 @@ __device__ float CalculateDistanceFromPointToLine(const float3 &pt, float3 line_
     return distance(pt, point_on_line);
 }
 
-
+#ifdef _MSC_VER
 #pragma region Model Collision Functions
+#endif
 
 /*
 
@@ -425,8 +430,9 @@ __device__ IntersectionResult resolve_strip_collisions(const int2 &sliceRange, c
 	return make_intersection_result(distance_to_move, intersected);
 }
 
-
+#ifdef _MSC_VER
 #pragma endregion
+#endif
 
 /*
 * Inputs the previous position and potential new position

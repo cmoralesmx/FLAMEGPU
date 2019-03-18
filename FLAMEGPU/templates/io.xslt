@@ -1438,8 +1438,10 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   #include &lt;time.h&gt;
   extern "C" int __cdecl fseek64(FILE *, int_64, int);
   extern "C" int_64 __cdecl ftell64(FILE *);
-
+  
+  #ifdef _MSC_VER
   #pragma region Variables
+  #endif
 
 
   /* Pointer to binary file */
@@ -1451,10 +1453,11 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   int_64 iterationOffsetLocation = -1;
   //int_64* iterationOffsetTable = NULL;
 
-
+  #ifdef _MSC_VER
   #pragma endregion
 
   #pragma region File Handler Functions
+  #endif
 
   void createBinaryOutputFile(char* outputpath) {
   char data[1000];
@@ -1508,10 +1511,12 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   fwrite(string, sizeof(char), strLen, f);
   }
 
+  #ifdef _MSC_VER
   #pragma endregion
 
 
   #pragma region Flame Binary Specific Functions
+  #endif
 
   void writeFlameBinaryHeader(int noOfRecords, const char* simulationDescription, const char* variantDescription, int repetitionNo) {
   char isCompressed = 0;
@@ -1589,10 +1594,11 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   }
   }
 
+  #ifdef _MSC_VER
   #pragma endregion
 
   #pragma region Save Iteration Data Functions
-
+  #endif
 
   void saveIterationDataToFlameBinary(int iteration_number, <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">
     xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* d_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, int h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count<xsl:if test="position()!=last()">,</xsl:if>
@@ -1694,7 +1700,9 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   //fclose(file);
   }
 
+  #ifdef MSC_VER
   #pragma endregion
+  #endif
 
   /* END FLAME GPU EXTENSIONS */
 
