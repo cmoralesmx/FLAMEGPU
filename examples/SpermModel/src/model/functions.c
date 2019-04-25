@@ -240,7 +240,7 @@ __device__ void AttachSpermToOocyte(xmachine_memory_Sperm* sperm, Matrix& spermM
 
 	SetActivationState(sperm, ACTIVATION_STATE_POST_CAPACITATED);
 	SetCollisionState(sperm, COLLISION_STATE_ATTACHED_TO_OOCYTE);
-	sperm->attachedToOocyteTime = d_current_iteration_no;
+	sperm->attachedToOocyteTime = currentIterationNo;
 	sperm->attachedToOocyteID = oocyteCollisionID;
 }
 

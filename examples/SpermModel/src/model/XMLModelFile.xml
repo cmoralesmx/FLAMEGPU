@@ -7,7 +7,6 @@
       <type>unsigned int</type>
       <name>currentIterationNo</name>
       <description>Keeps track of the current iteration number</description>
-      <defaultValue>0</defaultValue>
     </gpu:variable>
       <gpu:variable>
         <type>float</type>
