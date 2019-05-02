@@ -112,8 +112,9 @@ int checkUsage(int argc, char** argv) {
   printf("                         5 = Every 5 iterations\n");
   printf("                         Default value: %d\n", OUTPUT_TO_XML);
   printf("  binary_output        Binary output flag\n");
-  printf("                         1 = Output to binary format\n");
   printf("                         0 = Output to XML format (Default).\n");
+  printf("                         1 = Output to binary format\n");
+
   // Set the appropriate return value
   retval = false;
   }
@@ -264,7 +265,7 @@ void setFilePaths(char* input){
 
 int getBinaryOutput(int argc, char**argv){
 int binaryOutput = 0;
-  if (argc &gt;= 5){
+  if (argc == 6){
 		binaryOutput = (int) atoi(argv[5]);
 		if(binaryOutput &lt;= 0){
 			binaryOutput = 0;
