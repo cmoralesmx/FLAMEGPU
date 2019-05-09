@@ -357,7 +357,8 @@ void runConsoleWithoutXMLOutput(int iterations){
 	// Iteratively run the correct number of iterations.
 	for (int i=0; i&lt; iterations || iterations == 0; i++)
 	{
-		printf("Processing Simulation Step %i\n", i+1);
+    if(i % 450 == 0)
+		  printf("Processing Simulation Step %i\n", i+1);
 		//single simulation iteration
 		singleIteration();
 		

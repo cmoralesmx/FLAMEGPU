@@ -558,7 +558,7 @@
         <initialState>pre_initial_state</initialState>
       </states>
       <gpu:type>continuous</gpu:type>
-      <gpu:bufferSize>65536</gpu:bufferSize>
+      <gpu:bufferSize>524288</gpu:bufferSize>
 	</gpu:xagent>
 	<gpu:xagent>
       <name>Oocyte</name>
@@ -613,7 +613,7 @@
         <initialState>passive</initialState>
       </states>
       <gpu:type>continuous</gpu:type>
-      <gpu:bufferSize>256</gpu:bufferSize>
+      <gpu:bufferSize>1024</gpu:bufferSize>
     </gpu:xagent>
   </xagents>
   <messages>
@@ -643,7 +643,7 @@
         </gpu:variable>
       </variables>
       <gpu:partitioningNone></gpu:partitioningNone>
-      <gpu:bufferSize>256</gpu:bufferSize>
+      <gpu:bufferSize>1024</gpu:bufferSize>
     </gpu:message>
   </messages>
   <layers>
