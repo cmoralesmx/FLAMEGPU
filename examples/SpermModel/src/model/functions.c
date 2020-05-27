@@ -19,7 +19,7 @@
 #define _FLAMEGPU_FUNCTIONS
 
 #include <header.h>
-#include <helper_math.h>
+#include "Common/helper_math.h"
 #include "OviductCollisionDetectionV1/collision_detectionCUDA.h"
 #include "Common/common.h"
 #include "Common/cuda_matrix.h"

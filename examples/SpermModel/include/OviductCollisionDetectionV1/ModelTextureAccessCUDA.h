@@ -4,9 +4,9 @@
 #define _MODEL_TEXTURE_ACCESS_H 1
 
 #include <cuda_runtime.h>
-#include <helper_cuda.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "Common/helper_cuda.h"
 #include "Model3DCodeCUDA.h"
 
 __device__ float4* TRIANGLE_BOUNDING_SPHERE_D;

@@ -8,7 +8,7 @@
  * 
  */
 
-#include "helper_math.h"
+#include "Common/helper_math.h"
 #include "OviductCollisionDetectionV1/sphere_collision_comprehensiveCUDA.h"
 #include "OviductCollisionDetectionV1/ModelTextureAccessCUDA.h"
 
