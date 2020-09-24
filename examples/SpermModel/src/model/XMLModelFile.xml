@@ -162,7 +162,84 @@
          <description>Non-Progressive Straight Line Velocity (VSL)</description>
         <defaultValue>72.3</defaultValue>
       </gpu:variable>
-            
+
+      <gpu:variable>
+        <type>int</type>
+        <name>Const_IsthLastSlice</name>
+        <defaultValue>599</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>int</type>
+        <name>Const_AmpLastSlice</name>
+        <defaultValue>1199</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_PercVelocityDueToExosomes</name>
+        <description>Percentage of progresive velocity attributed to Exosomes</description>
+        <defaultValue>0.6</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_BaseProgressiveVelocity</name>
+      </gpu:variable>
+
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_IsthExoConcMean</name>
+        <description>Exosomes concentration in the isthmus (mean) in particles per square micro meter</description>
+        <defaultValue>3.5</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_IsthExoConcSDev</name>
+        <description>Exosomes concentration in the isthmus (sd)</description>
+        <defaultValue>0.5</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_AmpExoConcMean</name>
+        <description>Exosomes concentration in the ampulla (mean)</description>
+        <defaultValue>1.5</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_AmpExoConcSDev</name>
+        <description>Exosomes concentration in the ampulla (sd)</description>
+        <defaultValue>0.2</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_MaxExoConc</name>
+        <description>Maximum exosome concentration in the oviduct</description>
+        <defaultValue>1.0</defaultValue>
+      </gpu:variable>
+
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_IsthMvConcMean</name>
+        <description>Micro vesicles concentration in the isthmus (mean)</description>
+        <defaultValue>2.5</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_IsthMvConcSDev</name>
+        <description>Micro vesicles concentration in the isthmus (sd)</description>
+        <defaultValue>0.5</defaultValue>
+      </gpu:variable>      
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_AmpMvConcMean</name>
+        <description>Mean micro vesicles concentration in the ampulla (mean)</description>
+        <defaultValue>1.5</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_AmpMvConcSDev</name>
+        <description>Mean micro vesicles concentration in the ampulla (sd)</description>
+        <defaultValue>0.2</defaultValue>
+      </gpu:variable>
+
     </gpu:constants>
     <gpu:functionFiles>
       <file>functions.c</file>

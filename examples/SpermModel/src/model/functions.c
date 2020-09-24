@@ -52,11 +52,20 @@ __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 
 		initialiseGPUDataFromFile(dataFile);
 	}
-	const char* simDesc = "Simulation using final corrected model with mouse_oviduct a";
+	const char* simDesc = "Simulation using ev-extended model with pig_oviduct a";
 	setSimulationDescription(simDesc);
 
 	//Perform the pre-initialisation step - distribute the sperm on the walls
 	singleIteration();
+
+	float baseProgVel = (*get_Const_ProgressiveVelocity() 
+		- *get_Const_ProgressiveVelocity() * *get_Const_PercVelocityDueToExosomes());
+	printf("Base progresive velocity %f\n", baseProgVel);
+	set_Const_BaseProgressiveVelocity(&baseProgVel);
+
+	float maxExoConc = max(*get_Const_IsthExoConcMean(), *get_Const_AmpExoConcMean());
+	printf("Max exosome concentration %f\n", maxExoConc);
+	set_Const_MaxExoConc(&maxExoConc);
 }
 
 
@@ -479,6 +488,12 @@ __device__ bool SingleProgressiveMovement(xmachine_memory_Sperm* sperm,
 
 }
 
+/* Moves forward at small steps, progressively performing collision detection
+	EV effect: singleStepDistance is affected by the presence of EVs, higher 
+	concentrations provide an stimulous to the progressive movement.
+	1) Read EV concentration at current location
+	2) Affect the singleStepDistance in the corresponding amount
+*/
 __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm, 
 	xmachine_message_oocytePosition_list* oocytePositionList, RNG_rand48* rand48) {
 	//Pre cache all oocyte positions in shared memory to allow for multiple iterative loops and early exit for out of bounds agents (limitations of flame GPU).
@@ -487,10 +502,29 @@ __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm,
 	if (SpermOutOfBounds()) { return 0; }
 
 	Matrix spermMatrix = getTransformationMatrix(sperm);
-
+	float singleStepDistance;
 	bool resolved;
-	for(int i=0;i<Const_ProgressiveMovementSteps;i++) {
-		resolved = SingleProgressiveMovement(sperm, spermMatrix, rand48, GetSingleStepProgressiveVelocity(sperm));
+	float exosomeFactor;
+
+	float mean; float sd;
+	if(sperm->oviductSegment < Const_IsthLastSlice){
+		mean = Const_IsthExoConcMean;
+		sd = Const_IsthExoConcSDev;
+	} else {
+		mean = Const_AmpExoConcMean;
+		sd = Const_AmpExoConcSDev;
+	}
+	
+	exosomeFactor = sd + mean * sqrtf(-2.0 * log(rnd<CONTINUOUS>(rand48))); // rnd<CONTINUOUS>(rand48);
+	if(exosomeFactor > (mean + sd + sd)){
+		exosomeFactor = exosomeFactor / Const_MaxExoConc;
+	}
+
+	singleStepDistance = (Const_BaseProgressiveVelocity 
+		+ exosomeFactor * Const_PercVelocityDueToExosomes
+		)/ ((float)Const_ProgressiveMovementSteps);
+	for(int i=0; i < Const_ProgressiveMovementSteps; i++) {
+		resolved = SingleProgressiveMovement(sperm, spermMatrix, rand48, singleStepDistance);
 
 		if (resolved) {
 			break;
