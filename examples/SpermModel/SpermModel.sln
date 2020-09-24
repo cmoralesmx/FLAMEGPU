@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpermModel", "SpermModel.vcxproj", "{DEF4AA63-5C4A-42DA-B791-C87F6D47EE14}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_Console|x64 = Debug_Console|x64
+		Debug_Visualisation|x64 = Debug_Visualisation|x64
+		Release_Console|x64 = Release_Console|x64
+		Release_Visualisation|x64 = Release_Visualisation|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DEF4AA63-5C4A-42DA-B791-C87F6D47EE14}.Debug_Console|x64.ActiveCfg = Debug_Console|x64
+		{DEF4AA63-5C4A-42DA-B791-C87F6D47EE14}.Debug_Console|x64.Build.0 = Debug_Console|x64
+		{DEF4AA63-5C4A-42DA-B791-C87F6D47EE14}.Debug_Visualisation|x64.ActiveCfg = Debug_Visualisation|x64
+		{DEF4AA63-5C4A-42DA-B791-C87F6D47EE14}.Debug_Visualisation|x64.Build.0 = Debug_Visualisation|x64
+		{DEF4AA63-5C4A-42DA-B791-C87F6D47EE14}.Release_Console|x64.ActiveCfg = Release_Console|x64
+		{DEF4AA63-5C4A-42DA-B791-C87F6D47EE14}.Release_Console|x64.Build.0 = Release_Console|x64
+		{DEF4AA63-5C4A-42DA-B791-C87F6D47EE14}.Release_Visualisation|x64.ActiveCfg = Release_Visualisation|x64
+		{DEF4AA63-5C4A-42DA-B791-C87F6D47EE14}.Release_Visualisation|x64.Build.0 = Release_Visualisation|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

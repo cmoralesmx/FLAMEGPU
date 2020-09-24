@@ -1,0 +1,686 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gpu:xmodel xmlns:gpu="http://www.dcs.shef.ac.uk/~paul/XMMLGPU" xmlns="http://www.dcs.shef.ac.uk/~paul/XMML">
+  <name>Sperm Model</name>
+  <gpu:environment>
+	<gpu:constants>
+    <gpu:variable>
+      <type>unsigned int</type>
+      <name>currentIterationNo</name>
+      <description>Keeps track of the current iteration number</description>
+      <defaultValue>0</defaultValue>
+    </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_OocyteFertilityStartTime</name>
+        <description>
+          Time Point (in seconds) when oocyte are able to become fertilised by sperm
+        </description>
+        <defaultValue>0</defaultValue>
+      </gpu:variable>
+      
+       <gpu:variable>
+        <type>float</type>
+        <name>Const_CapacitationThreshold</name>
+         <description>Threshold Value between [0 1]
+         probability that a pre-capacitated sperm will become capacitated</description>
+        <defaultValue>0</defaultValue>
+      </gpu:variable>
+      
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_SpermFertileLifetime</name>
+         <description>Mean total life in seconds of fertile sperm, if capacitated after this time, will not be able to penetrate oocyte</description>
+        <defaultValue>(13 * 3600)</defaultValue>
+      </gpu:variable>
+  
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_AttachmentThresholdProgressive</name>
+         <description>Threshold Value between [0 1]
+         probability that a progressive sperm will attach to the epithelium</description>
+        <defaultValue>0.5</defaultValue>
+      </gpu:variable>
+      
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_AttachmentThresholdNonProgressive</name>
+         <description>Threshold Value between [0 1]
+         probability that a non-progressive sperm will attach to the epithelium</description>
+        <defaultValue>0</defaultValue>
+      </gpu:variable>
+      
+       <gpu:variable>
+        <type>float</type>
+        <name>Const_DetachmentThresholdProgressive</name>
+         <description>Threshold Value between [0 1]
+         probability that a progressive sperm will detach from the epithelium</description>
+        <defaultValue>0</defaultValue>
+      </gpu:variable>
+
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_DetachmentThresholdNonProgressive</name>
+         <description>Threshold Value between [0 1]
+         probability that a non-progressive sperm will detach from the epithelium</description>
+        <defaultValue>0.5</defaultValue>
+      </gpu:variable>
+
+      <gpu:variable>
+        <type>int</type>
+        <name>Const_CapacitatedSpermLife</name>
+         <description>Mean life in seconds of sperm once capacitated</description>
+        <defaultValue>7200</defaultValue>
+      </gpu:variable>
+      
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_ProgressiveMin</name>
+        <description>
+          Mean duration for progressive movement
+        </description>
+        <defaultValue>10</defaultValue>
+      </gpu:variable>
+
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_ProgressiveMax</name>
+        <description>
+         SD for progressive movement
+        </description>
+        <defaultValue>60</defaultValue>
+      </gpu:variable>
+
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_NonProgressiveMin</name>
+        <description>
+          Mean duration for non-progressive movement
+        </description>
+        <defaultValue>5</defaultValue>
+      </gpu:variable>
+
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_NonProgressiveMax</name>
+        <description>
+          SD for non-progressive movement
+        </description>
+        <defaultValue>10</defaultValue>
+      </gpu:variable>
+      
+       <gpu:variable>
+        <type>float</type>
+        <name>Const_ReflectionMaxRotationAngle</name>
+         <description>Angular (half-conic) rotation of sperm when colliding with tissue [0 - 360]</description>
+        <defaultValue>60</defaultValue>
+      </gpu:variable>
+      
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_DetachmentMaxRotationAngle</name>
+         <description>Angular (half-conic) rotation of sperm when detaching from tissue [0 - 360]</description>
+        <defaultValue>90</defaultValue>
+      </gpu:variable>
+      
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_NonProgressiveMaxRotationAngle</name>
+         <description>Angular (conic) rotation of sperm while moving non-progressively [0 - 360]</description>
+        <defaultValue>30</defaultValue>
+      </gpu:variable>
+      
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_OocyteRadius</name>
+         <description>Radius of the oocyte (excluding OCC)</description>
+        <defaultValue>56.65</defaultValue>
+      </gpu:variable>
+      
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_SpermRadius</name>
+         <description>Radius of sphere for sperm head (typically based on head width)</description>
+        <defaultValue>4.5</defaultValue>
+      </gpu:variable>
+      
+       <gpu:variable>
+        <type>int</type>
+        <name>Const_ProgressiveMovementSteps</name>
+         <description>Number of steps to subdivide progressive movement, typically based on BCF</description>
+        <defaultValue>1</defaultValue>
+      </gpu:variable>
+     
+       <gpu:variable>
+        <type>float</type>
+        <name>Const_ProgressiveVelocity</name>
+         <description>Progressive Average Path Velocity (VAP) um / s</description>
+        <defaultValue>52</defaultValue>
+      </gpu:variable>
+      
+       <gpu:variable>
+        <type>float</type>
+        <name>Const_NonProgressiveVelocity</name>
+         <description>Non-Progressive Straight Line Velocity (VSL)</description>
+        <defaultValue>19</defaultValue>
+      </gpu:variable>
+            
+    </gpu:constants>
+    <gpu:functionFiles>
+      <file>functions.c</file>
+    </gpu:functionFiles>
+	<gpu:definitions>
+       <gpu:definition>
+        <gpu:name>MAX_NO_OF_UNIQUE_ENVIRONMENTS</gpu:name>
+        <gpu:value>1</gpu:value>
+      </gpu:definition>
+       <gpu:definition>
+        <gpu:name>MAX_NO_OF_SPERM</gpu:name>
+        <gpu:value>10000</gpu:value>
+      </gpu:definition>
+       <gpu:definition>
+        <gpu:name>MAX_NO_OF_OOCYTES</gpu:name>
+        <gpu:value>20</gpu:value>
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>ACTIVATION_STATE_DEAD</gpu:name>
+        <gpu:value>0</gpu:value>
+        <!-- 0x0000 0000 0000 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>ACTIVATION_STATE_PRE_CAPACITATED</gpu:name>
+        <gpu:value>1</gpu:value>
+        <!-- 0x1000 0000 0000 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>ACTIVATION_STATE_CAPACITATED</gpu:name>
+        <gpu:value>2</gpu:value>
+        <!-- 0x0100 0000 0000 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>ACTIVATION_STATE_POST_CAPACITATED</gpu:name>
+        <gpu:value>4</gpu:value>
+        <!-- 0x0010 0000 0000 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>ACTIVATION_STATE_MASK</gpu:name>
+        <gpu:value>7</gpu:value>
+        <!-- (ACTIVATION_STATE_DEAD | ACTIVATION_STATE_PRE_CAPACITATED | ACTIVATION_STATE_CAPACITATED | ACTIVATION_STATE_POST_CAPACITATED)-->
+        <!-- 0x0001 1111 1111 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>MOVEMENT_STATE_PROGRESSIVE</gpu:name>
+        <gpu:value>8</gpu:value>
+        <!-- 0x0001 0000 0000 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>MOVEMENT_STATE_NON_PROGRESSIVE</gpu:name>
+        <gpu:value>16</gpu:value>
+        <!-- 0x0000 1000 0000 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>MOVEMENT_STATE_MASK</gpu:name>
+        <gpu:value>24</gpu:value>
+        <!-- (MOVEMENT_STATE_PROGRESSIVE | MOVEMENT_STATE_NON_PROGRESSIVE)-->
+        <!-- 0x1110 0111 1111 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>COLLISION_STATE_FREE</gpu:name>
+        <gpu:value>32</gpu:value>
+        <!-- 0x0000 0100 0000 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>COLLISION_STATE_TOUCHING_EPITHELIUM</gpu:name>
+        <gpu:value>96</gpu:value>
+        <!-- 64 + COLLISION_STATE_FREE-->
+        <!-- 0x0000 0110 0000 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>COLLISION_STATE_ATTACHED_TO_EPITHELIUM</gpu:name>
+        <gpu:value>128</gpu:value>
+        <!-- 0x0000 0001 0000 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>COLLISION_STATE_ATTACHED_TO_OOCYTE</gpu:name>
+        <gpu:value>256</gpu:value>
+        <!-- 0x0000 0000 1000 -->
+      </gpu:definition>
+      <gpu:definition>
+        <gpu:name>COLLISION_STATE_MASK</gpu:name>
+        <gpu:value>480</gpu:value>
+        <!-- (COLLISION_STATE_FREE | COLLISION_STATE_TOUCHING_EPITHELIUM | COLLISION_STATE_ATTACHED_TO_EPITHELIUM | COLLISION_STATE_ATTACHED_TO_OOCYTE)-->
+        <!-- 0x1111 1000 0111 -->
+      </gpu:definition>
+    </gpu:definitions>
+
+    <gpu:initFunctions>
+      <gpu:initFunction>
+        <gpu:name>copyModelData</gpu:name>
+      </gpu:initFunction>
+    </gpu:initFunctions>
+
+    <gpu:stepFunctions>
+      <gpu:stepFunction>
+        <gpu:name>updateIterationNo</gpu:name>
+      </gpu:stepFunction>
+    </gpu:stepFunctions>
+  </gpu:environment>
+
+  <xagents>
+    <gpu:xagent>
+      <name>Sperm</name>
+      <memory>
+        <gpu:variable>
+          <type>int</type>
+          <name>id</name>
+        </gpu:variable>
+        
+         <gpu:variable>
+          <type>int</type>
+          <name>spermNo</name>
+        </gpu:variable>
+
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat0</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat1</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat2</name>
+        </gpu:variable>
+       <!-- <gpu:variable>
+          <type>float</type>
+          <name>_mat3</name>
+        </gpu:variable>-->
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat4</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat5</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat6</name>
+        </gpu:variable>
+       <!-- <gpu:variable>
+          <type>float</type>
+          <name>_mat7</name>
+        </gpu:variable>-->
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat8</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat9</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat10</name>
+        </gpu:variable>
+       <!-- <gpu:variable>
+          <type>float</type>
+          <name>_mat11</name>
+        </gpu:variable>-->
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat12</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat13</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>_mat14</name>
+        </gpu:variable>
+       <!-- <gpu:variable>
+          <type>float</type>
+          <name>_mat15</name>
+        </gpu:variable>-->
+
+        <gpu:variable>
+          <type>int</type>
+          <name>activationState</name>
+          <description></description>
+        </gpu:variable>
+        <gpu:variable>
+          <type>int</type>
+          <name>oviductSegment</name>
+        </gpu:variable>
+         <gpu:variable>
+          <type>int</type>
+          <name>uniqueEnvironmentNo</name>
+        </gpu:variable>
+         <gpu:variable>
+          <type>int</type>
+          <name>attachedToOocyteID</name>
+          <description></description>
+        </gpu:variable>
+        <gpu:variable>
+          <type>int</type>
+          <name>attachedToOocyteTime</name>
+          <description></description>
+        </gpu:variable>
+        <gpu:variable>
+          <type>int</type>
+          <name>remainingLifeTime</name>
+          <description></description>
+        </gpu:variable>
+        <gpu:variable>
+          <type>int</type>
+          <name>movementStateTimer</name>
+          <description></description>
+        </gpu:variable>
+      </memory>
+      <functions>
+        <gpu:function>
+          <name>Sperm_Init</name>
+          <description>Set initial states</description>
+          <currentState>pre_initial_state</currentState>
+          <nextState>final_state</nextState>
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>true</gpu:RNG>
+        </gpu:function>
+        <gpu:function>
+          <name>Sperm_Capacitate</name>
+          <description>Performs capacitation of pre-capacitated sperm</description>
+          <currentState>initial_state</currentState>
+          <nextState>final_state</nextState>
+          <condition>
+            <lhs>
+              <condition>
+                <lhs>
+                  <agentVariable>activationState</agentVariable>
+                </lhs>
+                <operator> &amp; </operator>
+                <rhs>
+                  <value>ACTIVATION_STATE_PRE_CAPACITATED</value>
+                </rhs>
+              </condition>
+            </lhs>
+            <operator> == </operator>
+            <rhs>
+              <value>ACTIVATION_STATE_PRE_CAPACITATED</value>
+            </rhs>
+          </condition>
+
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>true</gpu:RNG>
+        </gpu:function>
+
+       <gpu:function>
+          <name>Sperm_NonProgressiveMovement</name>
+          <description>Move sperm asynchronously</description>
+          <currentState>initial_state</currentState>
+          <nextState>post_movement_state</nextState>
+          <inputs>
+            <gpu:input>
+              <messageName>oocytePosition</messageName>
+            </gpu:input>
+          </inputs>
+          <condition>
+            <lhs>
+              <condition>
+                <lhs>
+                  <agentVariable>activationState</agentVariable>
+                </lhs>
+                <operator> &amp; </operator>
+                <rhs>
+                  <value>(COLLISION_STATE_FREE | ACTIVATION_STATE_CAPACITATED | MOVEMENT_STATE_NON_PROGRESSIVE)</value>
+                </rhs>
+              </condition>
+            </lhs>
+            <operator> == </operator>
+            <rhs>
+              <value>(COLLISION_STATE_FREE | ACTIVATION_STATE_CAPACITATED | MOVEMENT_STATE_NON_PROGRESSIVE)</value>
+            </rhs>
+          </condition>
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>true</gpu:RNG>
+        </gpu:function>
+        
+		<gpu:function>
+          <name>Sperm_ProgressiveMovement</name>
+          <description>Move sperm forward</description>
+          <currentState>initial_state</currentState>
+          <nextState>post_movement_state</nextState>
+          <inputs>
+            <gpu:input>
+              <messageName>oocytePosition</messageName>
+            </gpu:input>
+          </inputs>
+          <condition>
+            <lhs>
+              <condition>
+                <lhs>
+                  <agentVariable>activationState</agentVariable>
+                </lhs>
+                <operator> &amp; </operator>
+                <rhs>
+                  <value>(COLLISION_STATE_FREE | ACTIVATION_STATE_CAPACITATED | MOVEMENT_STATE_PROGRESSIVE)</value>
+                </rhs>
+              </condition>
+            </lhs>
+            <operator> == </operator>
+            <rhs>
+              <value>(COLLISION_STATE_FREE | ACTIVATION_STATE_CAPACITATED | MOVEMENT_STATE_PROGRESSIVE)</value>
+            </rhs>
+          </condition>
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>true</gpu:RNG>
+        </gpu:function>
+
+       
+
+        <gpu:function>
+          <name>Sperm_DetachFromEpithelium</name>
+          <description>Sperm tries to detach from epithelium</description>
+          <currentState>initial_state</currentState>
+          <nextState>post_movement_state</nextState>
+          <condition>
+            <lhs>
+              <condition>
+                <lhs>
+                  <agentVariable>activationState</agentVariable>
+                </lhs>
+                <operator> &amp; </operator>
+                <rhs>
+                  <value>(COLLISION_STATE_ATTACHED_TO_EPITHELIUM | ACTIVATION_STATE_CAPACITATED)</value>
+                </rhs>
+              </condition>
+            </lhs>
+            <operator> == </operator>
+            <rhs>
+              <value>(COLLISION_STATE_ATTACHED_TO_EPITHELIUM | ACTIVATION_STATE_CAPACITATED)</value>
+            </rhs>
+          </condition>
+
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>true</gpu:RNG>
+        </gpu:function>
+
+         <gpu:function>
+          <name>Sperm_SwitchMovementState</name>
+          <description>Switch between non-progressive and progressive</description>
+          <currentState>post_movement_state</currentState>
+          <nextState>final_state</nextState>
+          <condition>
+            <lhs>
+              <condition>
+                <lhs>
+                  <agentVariable>activationState</agentVariable>
+                </lhs>
+                <operator> &amp; </operator>
+                <rhs>
+                  <value>(ACTIVATION_STATE_CAPACITATED)</value>
+                </rhs>
+              </condition>
+            </lhs>
+            <operator> == </operator>
+            <rhs>
+              <value>(ACTIVATION_STATE_CAPACITATED)</value>
+            </rhs>
+          </condition>
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>true</gpu:RNG>
+        </gpu:function>
+
+       <gpu:function>
+          <name>Sperm_RegulateState</name>
+          <description>Return to initial state</description>
+          <currentState>final_state</currentState>
+          <nextState>initial_state</nextState>
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>false</gpu:RNG>
+        </gpu:function>
+      </functions>
+      <states>
+		<gpu:state>
+          <name>pre_initial_state</name>
+        </gpu:state>
+        <gpu:state>
+          <name>initial_state</name>
+        </gpu:state>
+         <gpu:state>
+          <name>movement_state</name>
+        </gpu:state>
+        <gpu:state>
+          <name>post_movement_state</name>
+        </gpu:state>
+        <gpu:state>
+          <name>final_state</name>
+        </gpu:state>
+        <initialState>pre_initial_state</initialState>
+      </states>
+      <gpu:type>continuous</gpu:type>
+      <gpu:bufferSize>(MAX_NO_OF_SPERM * MAX_NO_OF_UNIQUE_ENVIRONMENTS)</gpu:bufferSize>
+	</gpu:xagent>
+	<gpu:xagent>
+      <name>Oocyte</name>
+      <memory>
+        <gpu:variable>
+          <type>int</type>
+          <name>id</name>
+        </gpu:variable>
+         <gpu:variable>
+          <type>int</type>
+          <name>oocyteNo</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>positionX</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>positionY</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>positionZ</name>
+          <description></description>
+        </gpu:variable>
+        <gpu:variable>
+          <type>int</type>
+          <name>uniqueEnvironmentNo</name>
+          <description></description>
+        </gpu:variable>
+      </memory>
+      <functions>
+        <gpu:function>
+          <name>Oocyte_ReportPosition</name>
+          <description>reports the current position to all sperm</description>
+          <currentState>passive</currentState>
+          <nextState>passive</nextState>
+          <outputs>
+            <gpu:output>
+              <messageName>oocytePosition</messageName>
+              <gpu:type>single_message</gpu:type>
+            </gpu:output>
+          </outputs>
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>false</gpu:RNG>
+        </gpu:function>
+      </functions>
+      <states>
+        <gpu:state>
+          <name>passive</name>
+        </gpu:state>
+        <initialState>passive</initialState>
+      </states>
+      <gpu:type>continuous</gpu:type>
+      <gpu:bufferSize>(MAX_NO_OF_OOCYTES * MAX_NO_OF_UNIQUE_ENVIRONMENTS)</gpu:bufferSize>
+    </gpu:xagent>
+  </xagents>
+  <messages>
+    <gpu:message>
+      <name>oocytePosition</name>
+      <description>contains the position and radius of the oocyte</description>
+      <variables>
+        <gpu:variable>
+          <type>int</type>
+          <name>id</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>positionX</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>positionY</name>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>positionZ</name>
+        </gpu:variable>
+         <gpu:variable>
+          <type>int</type>
+          <name>uniqueEnvironmentNo</name>
+        </gpu:variable>
+      </variables>
+      <gpu:partitioningNone></gpu:partitioningNone>
+      <gpu:bufferSize>(MAX_NO_OF_OOCYTES * MAX_NO_OF_UNIQUE_ENVIRONMENTS)</gpu:bufferSize>
+    </gpu:message>
+  </messages>
+  <layers>
+    <layer>
+      <gpu:layerFunction>
+        <name>Sperm_Init</name>
+      </gpu:layerFunction>
+    </layer>
+    <layer>
+       <gpu:layerFunction>
+        <name>Sperm_Capacitate</name>
+      </gpu:layerFunction>
+      <gpu:layerFunction>
+        <name>Oocyte_ReportPosition</name>
+      </gpu:layerFunction>
+    </layer>
+    <layer>
+      <gpu:layerFunction>
+        <name>Sperm_ProgressiveMovement</name>
+      </gpu:layerFunction>
+      <gpu:layerFunction>
+        <name>Sperm_NonProgressiveMovement</name>
+      </gpu:layerFunction>
+      <gpu:layerFunction>
+        <name>Sperm_DetachFromEpithelium</name>
+      </gpu:layerFunction>
+    </layer>
+    <layer>
+      <gpu:layerFunction>
+        <name>Sperm_SwitchMovementState</name>
+      </gpu:layerFunction>
+    </layer> 
+    <layer>
+      <gpu:layerFunction>
+        <name>Sperm_RegulateState</name>
+      </gpu:layerFunction>
+    </layer>
+  </layers>
+</gpu:xmodel>

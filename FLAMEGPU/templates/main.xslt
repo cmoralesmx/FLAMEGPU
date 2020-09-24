@@ -88,82 +88,85 @@ int checkUsage(int argc, char** argv) {
 	}
 #else
 	printf("FLAMEGPU Console mode\n");
-	if(helpFlagFound || argc &lt; 3 || argc &gt; 5)
-	{
-		printf("\nusage: %s [-h] [--help] input_path num_iterations [cuda_device_id] [XML_output_override]\n", executable != nullptr ? executable : "main");
-		printf("\n");
-		printf("required arguments:\n");
-		printf("  input_path           Path to initial states XML file OR path to output XML directory\n");
-		printf("  num_iterations       Number of simulation iterations\n");
-		printf("\n");
-		printf("options arguments:\n");
-		printf("  -h, --help           Output this help message.\n");
-		printf("  cuda_device_id       CUDA device ID to be used. Default is 0.\n");
-		printf("  XML_output_frequency Frequency of XML output\n");
-		printf("                         0 = No output\n");
-		printf("                         1 = Every 1 iteration\n");
-		printf("                         5 = Every 5 iterations\n");
-		printf("                         Default value: %d\n", OUTPUT_TO_XML);
-		// Set the appropriate return value
-		retval = false;
-	}
-#endif
+	if(helpFlagFound || argc &lt; 3 || argc &gt; 6)
+  {
+  printf("\nusage: %s [-h] [--help] input_path num_iterations [cuda_device_id] [XML_output_override] [binary_output]\n", executable != nullptr ? executable : "main");
+  printf("\n");
+  printf("required arguments:\n");
+  printf("  input_path           Path to initial states XML file OR path to output XML directory\n");
+  printf("  num_iterations       Number of simulation iterations\n");
+  printf("\n");
+  printf("options arguments:\n");
+  printf("  -h, --help           Output this help message.\n");
+  printf("  cuda_device_id       CUDA device ID to be used. Default is 0.\n");
+  printf("  XML_output_override  Frequency of XML output\n");
+  printf("                         0 = No output\n");
+  printf("                         1 = Every 1 iteration\n");
+  printf("                         5 = Every 5 iterations\n");
+  printf("                         Default value: %d\n", OUTPUT_TO_XML);
+  printf("  binary_output        Binary output flag\n");
+  printf("                         1 = Output to binary format\n");
+  printf("                         0 = Output to XML format (Default).\n");
+  // Set the appropriate return value
+  retval = false;
+  }
+  #endif
 
-	// Free malloced memory
-	free(executable);
-	executable = nullptr;
-	// return the appropriate code.
-	return retval;
-}
+  // Free malloced memory
+  free(executable);
+  executable = nullptr;
+  // return the appropriate code.
+  return retval;
+  }
 
-/** getOutputDir
- * Function which gets the global char array contianign the path for output
- * @return char array containing relative path to output locaiton
- */
-const char* getOutputDir(){
-    return outputpath;
-}
+  /** getOutputDir
+  * Function which gets the global char array contianign the path for output
+  * @return char array containing relative path to output locaiton
+  */
+  const char* getOutputDir(){
+  return outputpath;
+  }
 
 
-/** parentDirectoryOfPath
-* Function which given a path removes the last segment, copying into a pre-defined buffer.
-* @param parent pre allocated buffer for the shoretened path
-* @param path input path to be shortented
-*/
-void parentDirectoryOfPath(char * parent, char * path) {
-	int i = 0;
-	int lastd = -1;
-	while (path[i] != '\0')
-	{
-		/* For windows directories */
-		if (path[i] == '\\') lastd = i;
-		/* For unix directories */
-		if (path[i] == '/') lastd = i;
-		i++;
-	}
-	strcpy(parent, path);
-	//parent[lastd + 1] = '\0';
-	// Replace the traling slash, as files and directories cannot have the same name.
-	parent[lastd + 1] = '\0';
-}
+  /** parentDirectoryOfPath
+  * Function which given a path removes the last segment, copying into a pre-defined buffer.
+  * @param parent pre allocated buffer for the shoretened path
+  * @param path input path to be shortented
+  */
+  void parentDirectoryOfPath(char * parent, char * path) {
+  int i = 0;
+  int lastd = -1;
+  while (path[i] != '\0')
+  {
+  /* For windows directories */
+  if (path[i] == '\\') lastd = i;
+  /* For unix directories */
+  if (path[i] == '/') lastd = i;
+  i++;
+  }
+  strcpy(parent, path);
+  //parent[lastd + 1] = '\0';
+  // Replace the traling slash, as files and directories cannot have the same name.
+  parent[lastd + 1] = '\0';
+  }
 
-/** getPathProperties
-* Function to get information about a filepath, if it exists, is a file or is a directory
-* @param path path to be checked
-* @param isFile returned boolean indicating if the path points to a file.
-* @param isDir return boolean indicating if the path points to a directory.
-* @return boolean indicating if the path exists.
-*/
-bool getPathProperties(char * path, bool * isFile, bool * isDir) {
-	bool fileExists = false;
-	// Initialse bools to false.
-	*isFile = false;
-	*isDir = false;
+  /** getPathProperties
+  * Function to get information about a filepath, if it exists, is a file or is a directory
+  * @param path path to be checked
+  * @param isFile returned boolean indicating if the path points to a file.
+  * @param isDir return boolean indicating if the path points to a directory.
+  * @return boolean indicating if the path exists.
+  */
+  bool getPathProperties(char * path, bool * isFile, bool * isDir) {
+  bool fileExists = false;
+  // Initialse bools to false.
+  *isFile = false;
+  *isDir = false;
 
-	// Buffer for stat output.
-	struct stat statBuf {0};
-	// Use stat to query the path information.
-	int statResult = stat(path, &amp;statBuf);
+  // Buffer for stat output.
+  struct stat statBuf {0};
+  // Use stat to query the path information.
+  int statResult = stat(path, &amp;statBuf);
 
 	// If stat was successfull
 	if (statResult == 0) {
@@ -252,6 +255,16 @@ void setFilePaths(char* input){
 	printf("Output dir: %s\n", outputpath[0] != '\0' ? outputpath : "(cwd)");
 }
 
+int getBinaryOutput(int argc, char**argv){
+int binaryOutput = 0;
+  if (argc &gt;= 5){
+		binaryOutput = (int) atoi(argv[5]);
+		if(binaryOutput &lt;= 0){
+			binaryOutput = 0;
+		}
+	}
+	return binaryOutput;
+}
 
 int getOutputXMLFrequency(int argc, char**argv){
 
@@ -333,7 +346,7 @@ void initCUDA(int argc, char** argv){
 
 void runConsoleWithoutXMLOutput(int iterations){
 	PROFILE_SCOPED_RANGE("runConsoleWithoutXMLOutput");
-	// Iteratively tun the correct number of iterations.
+	// Iteratively run the correct number of iterations.
 	for (int i=0; i&lt; iterations || iterations == 0; i++)
 	{
 		printf("Processing Simulation Step %i\n", i+1);
@@ -346,7 +359,7 @@ void runConsoleWithoutXMLOutput(int iterations){
 
 void runConsoleWithXMLOutput(int iterations, int outputFrequency){
 	PROFILE_SCOPED_RANGE("runConsoleWithXMLOutput");
-	// Iteratively tun the correct number of iterations.
+	// Iteratively run the correct number of iterations.
 	for (int i=0; i&lt; iterations || iterations == 0; i++)
 	{
 		printf("Processing Simulation Step %i\n", i+1);
@@ -369,6 +382,93 @@ void runConsoleWithXMLOutput(int iterations, int outputFrequency){
 
 }
 
+/* FLAME GPU EXTENSIONS */
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+char simulationDescription[1000];
+
+#define OUTPUT_TO_FLAME_BINARY 1
+
+extern "C" void setSimulationDescription(const char * desc) {
+  sprintf(simulationDescription, desc);
+}
+
+//  runCustomSimulationType(itterations, repetitionNo, writeout_interval);
+  /*
+   * Runs the simulation and outputs to uncompressed Flame Binary (FLB) format
+   */
+  void runConsoleWithFLBOutput(int noOfIterations, int repetitionNo, int writeout_interval) {
+    PROFILE_SCOPED_RANGE("runConsoleWithFLBOutput");
+    printf("\r\nOutput to Flame Binary (FLB) format\r\n");
+    printf("Repetition %i - %i iterations to process\r\n", repetitionNo, noOfIterations);
+    printf("Progress Interval: 5 Seconds\r\n\r\n");
+    int noOfRecords = noOfIterations + 1;
+    createFlameBinaryOutputFile(outputpath, noOfRecords, simulationDescription, repetitionNo);
+
+    //Write initial states to binary file
+    saveIterationDataToFlameBinary(0, <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">
+      //<xsl:value-of select="xmml:name"/> state <xsl:value-of select="../../xmml:name"/> agents
+      get_host_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_agents(), get_device_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_agents(), get_agent_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count()<xsl:choose>
+        <xsl:when test="position()=last()">);</xsl:when>
+        <xsl:otherwise>,</xsl:otherwise>
+      </xsl:choose>
+    </xsl:for-each>
+
+    /*StopWatchInterface *timer=NULL;
+    sdkCreateTimer(&amp;timer);
+    sdkResetTimer(&amp;timer);
+    sdkStartTimer(&amp;timer);
+
+    clock_t begin = clock();
+    clock_t current;*/
+
+    printf("Processing Simulation...\n");
+
+    for (int i=1; i&lt;= noOfIterations; i++) {
+  
+  
+
+      //single simulation iteration
+      singleIteration();
+
+  if ((i)%writeout_interval == 0 || (i) == noOfIterations) {
+      saveIterationDataToFlameBinary(i, <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">
+        //<xsl:value-of select="xmml:name"/> state <xsl:value-of select="../../xmml:name"/> agents
+        get_host_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_agents(), get_device_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_agents(), get_agent_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count()<xsl:choose>
+          <xsl:when test="position()=last()">);</xsl:when>
+          <xsl:otherwise>,</xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
+  }
+  /*current = clock();
+  if (((current - begin)/(float)CLOCKS_PER_SEC) >= 5) {
+  begin = current;
+  printf("Completed Simulation Step %i\n", i);
+  }*/
+    if((i)%100==0){
+      printf("Completed Simulation Step %i\n", i);
+    }
+  }
+
+  //CUDA stop timing
+  cudaThreadSynchronize();
+  //sdkStopTimer(&amp;timer);
+    //float accurateRunTime = sdkGetTimerValue(&amp;timer);
+    __int64 simulationRunTime = 999; //(__int64)lroundf(accurateRunTime);
+
+    /*int totalSeconds = (int)floor(accurateRunTime / (float)1000);
+    int totalMinutes =  (int)floor(totalSeconds / (float)60);
+    int totalHours =  (int)floor(totalMinutes / (float)60);
+    float remainderms = ((accurateRunTime/1000.0f) - ((((totalHours * 60) + totalMinutes) * 60)));
+
+    printf( "Total Processing time: %f (ms), [%02i:%02i:%07.4f] (hh:mm:ss.mmmm)\n", accurateRunTime, totalHours, totalMinutes, remainderms);
+    sdkDeleteTimer(&amp;timer);*/
+
+    closeFlameBinaryOutputFile(noOfRecords, simulationRunTime);
+  }
+/* END FLAME GPU EXTENSIONS */
+
 /**
  * Program main (Handles arguments)
  */
@@ -384,6 +484,8 @@ int main( int argc, char** argv)
 
 	//determine frequency we want to output to xml.
 	int outputXMLFrequency = getOutputXMLFrequency(argc, argv);
+  
+  int binaryOutput = getBinaryOutput(argc, argv);
 
 	//initialise CUDA
 	initCUDA(argc, argv);
@@ -422,7 +524,11 @@ int main( int argc, char** argv)
 
 	// Launch the main loop with / without xml output.
 	if(outputXMLFrequency &gt; 0){
-		runConsoleWithXMLOutput(iterations, outputXMLFrequency);
+    if(binaryOutput > 0){
+      runConsoleWithFLBOutput(iterations, 0, outputXMLFrequency);
+    } else {
+		  runConsoleWithXMLOutput(iterations, outputXMLFrequency);
+    }
 	} else {
 		runConsoleWithoutXMLOutput(iterations);	
 	}

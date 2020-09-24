@@ -34,6 +34,11 @@
 
 // include FLAME kernels
 #include "FLAMEGPU_kernals.cu"
+
+/* FLAME GPU EXTENSIONS SECTION */
+int h_current_iteration_no = 0;
+/* END FLAME GPU EXTENSIONS */
+
 <!--Compile time errors for spatial partitioning -->
 <xsl:for-each select="gpu:xmodel/xmml:messages/gpu:message/gpu:partitioningSpatial">
 <!-- Calculate some values. -->

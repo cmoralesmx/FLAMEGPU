@@ -62,6 +62,20 @@ typedef glm::dvec2 dvec2;
 typedef glm::dvec3 dvec3;
 typedef glm::dvec4 dvec4;
 
+/* FLAME GPU EXTENSIONS SECTION */
+  
+/* used to track the current simulation iteration number */
+__constant__ int d_current_iteration_no;
+
+int getDataPath(char* path);
+
+/* global definitions */
+<xsl:for-each select="gpu:xmodel/gpu:environment/gpu:definitions/gpu:definition">
+#define <xsl:value-of select="gpu:name"/><xsl:text> </xsl:text><xsl:value-of select="gpu:value"/>
+</xsl:for-each>
+
+/* END FLAME GPU EXTENSIONS */
+
 	<xsl:if test="gpu:xmodel/xmml:messages/gpu:message/xmml:variables/gpu:variable/xmml:type='double' or gpu:xmodel/xmml:xagents/gpu:xagent/xmml:memory/gpu:variable/xmml:type='double'">
 //if this is defined then the project must be built with sm_13 or later
 #define _DOUBLE_SUPPORT_REQUIRED_</xsl:if>
@@ -861,6 +875,29 @@ public:
 #define PROFILE_POP_RANGE()
 #define PROFILE_SCOPED_RANGE(name)
 #endif
+
+
+/* FLAME GPU EXTENSIONS SECTION */
+
+/* Simulation Description Function */
+extern "C" void setSimulationDescription(const char * simulationDescription);
+
+/* File Handler Functions */
+extern "C" void saveIterationDataToBinary(char* outputpath, int iteration_number, <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* d_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, int h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count<xsl:if test="position()!=last()">,</xsl:if></xsl:for-each>);
+extern "C" void saveIterationDataToFlameBinary(int iteration_number, <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* d_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, int h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count<xsl:if test="position()!=last()">,</xsl:if></xsl:for-each>);
+extern "C" void saveIterationDataToCopyOnly(<xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* d_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, int h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count<xsl:if test="position()!=last()">,</xsl:if></xsl:for-each>);
+extern "C" void createBinaryOutputFile(char* outputpath);
+extern "C" void closeBinaryOutputFile();
+extern "C" void createFlameBinaryOutputFile(char* outputpath, int noOfRecords, const char* simulationDescription, int repetitionNo);
+extern "C" void closeFlameBinaryOutputFile(int noOfIterations, __int64 simulationRunTime);
+
+/* Custom Simulation Types */
+extern "C" void runCustomSimulationType(int itterations, int repetitionNo, int writeout_interval);
+
+/* Re-Initialise Random Number Generator */
+//extern "C" void reinit_RNG(int seed);
+
+/* END FLAME GPU EXTENSIONS */
 
 
 #endif //__HEADER
