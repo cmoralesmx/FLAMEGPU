@@ -108,7 +108,7 @@ void initialiseGPUData() {
 	char data[500];
 
 	sprintf(data, "%senvironment_definition.bin", INCLUDE_DATA_FILE);
-
+	printf("Will call initialiseGPUDataFromFile(data) with data=\"%s\"\n", data);
 	initialiseGPUDataFromFile(data);
 }
 

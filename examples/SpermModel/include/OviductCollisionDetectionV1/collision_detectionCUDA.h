@@ -147,13 +147,18 @@ __device__ int2 calculate_slice_range(const int agentId, const int currentSegmen
 /*
  * Tests for an intersection with the end cap at the end of the mesh. 
  */
-__device__ IntersectionResult resolve_end_cap_collisions(const float3 &oldPosition, const float3 &direction, const float distance_to_move, const float radius, float4 &collisionPlane) {
+__device__ IntersectionResult resolve_end_cap_collisions(
+	const float3 &oldPosition, const float3 &direction,
+	const float distance_to_move, const float radius, 
+	float4 &collisionPlane) {
 	float4 plane = -1.0 * getSlicePlane(NO_OF_SLICES_MINUS_ONE);
-	IntersectionResult result = testIntersectionPlaneSphere(plane, oldPosition, direction, distance_to_move, radius);
+	IntersectionResult result = testIntersectionPlaneSphere(
+		plane, oldPosition, direction, distance_to_move, radius);
 
 	if (result.intersectionOccurred == INTERSECTION_OCCURRED) {
 		collisionPlane = plane;
-		result = testIntersectionPlaneSphere(plane, oldPosition, direction, distance_to_move, radius + RADIUS_BUFFER);
+		result = testIntersectionPlaneSphere(plane, oldPosition, 
+			direction, distance_to_move, radius + RADIUS_BUFFER);
 		return make_intersection_result((result.distanceToMove), INTERSECTION_OCCURRED);
 	}
 	else {
@@ -164,14 +169,19 @@ __device__ IntersectionResult resolve_end_cap_collisions(const float3 &oldPositi
 /*
  * Tests for an intersection with the end cap at the start of the mesh. 
  */
-__device__ IntersectionResult resolve_start_cap_collisions(const float3 &oldPosition, const float3 &direction, const float distance_to_move, const float radius, float4 &collisionPlane) {
+__device__ IntersectionResult resolve_start_cap_collisions(
+	const float3 &oldPosition, const float3 &direction,
+	const float distance_to_move, const float radius, 
+	float4 &collisionPlane) {
 	float4 plane = getSlicePlane(0);
 	
-	IntersectionResult result = testIntersectionPlaneSphere(plane, oldPosition, direction, distance_to_move, radius);
+	IntersectionResult result = testIntersectionPlaneSphere(
+		plane, oldPosition, direction, distance_to_move, radius);
 
 	if (result.intersectionOccurred == INTERSECTION_OCCURRED) {
 		collisionPlane = plane;
-		result = testIntersectionPlaneSphere( plane, oldPosition, direction, distance_to_move, radius + RADIUS_BUFFER);
+		result = testIntersectionPlaneSphere( plane, oldPosition, 
+			direction, distance_to_move, radius + RADIUS_BUFFER);
 		return make_intersection_result(result.distanceToMove, INTERSECTION_OCCURRED);
 	}
 	else {
@@ -213,33 +223,35 @@ __device__ float CalculateDistanceFromPointToLine(const float3 &pt, float3 line_
 /*
 
  */
-__device__ bool isTriangleCloseEnoughToIntersect(const int index, const float3 &oldPosition, const float radius, const float3 &direction, const float distance_to_move) {
+__device__ bool isTriangleCloseEnoughToIntersect(const int index, 
+	const float3 &oldPosition, const float radius, const float3 &direction,
+	const float distance_to_move, float &distanceToSphereMid) {
 	float4 sphere = getTriangleBoundingSphere(index);
 
 	float total_radius = radius + sphere.w + RADIUS_BUFFER;
 	float3 sphere_mid = make_float3(sphere);
-	if (distance(oldPosition, sphere_mid) > (total_radius + distance_to_move + INTERSECTION_BUFFER)) {
+
+	distanceToSphereMid = distance(oldPosition, sphere_mid);
+	if (distanceToSphereMid > (total_radius + distance_to_move + INTERSECTION_BUFFER)) {
 		return false;
 	}
 
-  //  return true;
-
-
 	float3 pointOnLine;
-	return CalculateDistanceFromPointToLine(sphere_mid, oldPosition, oldPosition + (direction * (distance_to_move + INTERSECTION_BUFFER)), pointOnLine) <= total_radius;
-
+	float d = CalculateDistanceFromPointToLine(sphere_mid, oldPosition, 
+		oldPosition + (direction * (distance_to_move + INTERSECTION_BUFFER)), pointOnLine);
+	return d <= total_radius;
 }
 
 /*
-* Performs collision detection against the tri-strip with the specified index
-* If a collision occurs, the new position is modified to be INTERSECTION_BUFFER distance behind the intersection point.
-* Returns EXIT_COLLISION_DETECTION if the distance between oldPosition and newPosition becomes less than INTERSECTION_BUFFER.
-* Returns COLLISION_OCCURRED if an intersection has occurred.
-* Returns NO_COLLISION otherwise.
+	* Performs collision detection against the tri-strip with the specified index
+	* If a collision occurs, the new position is modified to be INTERSECTION_BUFFER distance behind the intersection point.
+	* Returns EXIT_COLLISION_DETECTION if the distance between oldPosition and newPosition becomes less than INTERSECTION_BUFFER.
+	* Returns COLLISION_OCCURRED if an intersection has occurred.
+	* Returns NO_COLLISION otherwise.
 */
-
-
-__device__ IntersectionResult hit_triangle_list(const float3 &oldPosition, const float3 &direction, float distance_to_move, const int start_index, const int end_index, const float radius, float4 &collisionPlane) {
+__device__ IntersectionResult hit_triangle_list(const float3 &oldPosition, 
+const float3 &direction, float distance_to_move, const int start_index,
+const int end_index, const float radius, float4 &collisionPlane) {
 	bool intersected = NO_INTERSECTION;
 
 	TrianglePlane tp;
@@ -253,23 +265,30 @@ __device__ IntersectionResult hit_triangle_list(const float3 &oldPosition, const
 	//float4 collisionplane;
 
 	for(int i=start;i<end;i++) {
-
-		if (!isTriangleCloseEnoughToIntersect(i, oldPosition, radius + RADIUS_BUFFER, direction, distance_to_move)) {
+		float distanceToSphereMid;
+		bool closeEnoughToIntersect = isTriangleCloseEnoughToIntersect(i, oldPosition,
+		 radius + RADIUS_BUFFER, direction, distance_to_move, distanceToSphereMid);
+		if (!closeEnoughToIntersect) {
 			continue;
 		}
 
 		tp = getTrianglePlane(i);
 
-		result = testIntersectionTriSphere(tp, oldPosition, radius, direction * distance_to_move);
+		result = testIntersectionTriSphere(tp, oldPosition, radius, 
+			direction * distance_to_move);
 
-		if (result.intersectionOccurred == INTERSECTION_OCCURRED && result.distanceToMove >= 0 && result.distanceToMove <= distance_to_move) {
+		if (result.intersectionOccurred == INTERSECTION_OCCURRED 
+			&& result.distanceToMove >= 0 
+			&& result.distanceToMove <= distance_to_move) {
 
 			originalDistance = distance_to_move;
 			distance_to_move = result.distanceToMove;
 			intersected = INTERSECTION_OCCURRED;
 			result = testIntersectionTriSphere(tp, oldPosition, radius + RADIUS_BUFFER, direction * originalDistance);
 			collisionPlane = tp.plane;
-			if (result.intersectionOccurred == INTERSECTION_OCCURRED && result.distanceToMove >= 0 && result.distanceToMove <= distance_to_move) {
+			if (result.intersectionOccurred == INTERSECTION_OCCURRED 
+				&& result.distanceToMove >= 0 
+				&& result.distanceToMove <= distance_to_move) {
 				distance_to_move = result.distanceToMove;
 			}
 		}
@@ -281,11 +300,14 @@ __device__ IntersectionResult hit_triangle_list(const float3 &oldPosition, const
 }
 
 
-__device__ IntersectionResult resolve_strip_collisions(const int2 &sliceRange, const float3 &oldPosition, const float3 &direction, float distance_to_move, const float radius, float4 &collisionPlane) {
+__device__ IntersectionResult resolve_strip_collisions(const int2 &sliceRange, 
+const float3 &oldPosition, const float3 &direction, float distance_to_move,
+const float radius, float4 &collisionPlane) {
 	bool intersected = NO_INTERSECTION;
 	IntersectionResult result;
 	
-	result = hit_triangle_list(oldPosition, direction, distance_to_move, sliceRange.x, sliceRange.y, radius, collisionPlane);
+	result = hit_triangle_list(oldPosition, direction, distance_to_move,
+		sliceRange.x, sliceRange.y, radius, collisionPlane);
 
 	if (result.intersectionOccurred == INTERSECTION_OCCURRED) {
 		intersected = INTERSECTION_OCCURRED;
@@ -303,11 +325,9 @@ __device__ IntersectionResult resolve_strip_collisions(const int2 &sliceRange, c
 * Inputs the previous position and potential new position
 * If a collision occurs, the new position is modified to be INTERSECTION_BUFFER distance behind the intersection point
 */
-
-
-
-__device__ CollisionResult resolve_environment_collisions(const int agentId, const int currentSegment, const float3 &oldPosition, const float3 &direction, float distance_to_move, const float radius) {
-
+__device__ CollisionResult resolve_environment_collisions(const int agentId, 
+const int currentSegment, const float3 &oldPosition, const float3 &direction,
+float distance_to_move, const float radius) {
 	//direction = normalize(direction);
 	IntersectionResult result;
 
@@ -320,11 +340,8 @@ __device__ CollisionResult resolve_environment_collisions(const int agentId, con
 
 	float extDistance = distance_to_move + (INTERSECTION_BUFFER);
 
-	int2 sliceRange = calculate_slice_range(agentId, currentSegment, oldPosition, direction, extDistance, radius + RADIUS_BUFFER);
-//sliceRange.x = 0;
-//sliceRange.y = 10;
-	//if (agentId == 2937 || agentId == 3600 || agentId == 4980)
-		//printf("legacy range:[%i, %i] new range:[%i, %i]\n", sliceRange.x, sliceRange.y, sliceRange.z, sliceRange.w);
+	int2 sliceRange = calculate_slice_range(agentId, currentSegment, 
+		oldPosition, direction, extDistance, radius + RADIUS_BUFFER);
 
 	int2 range = make_int2(sliceRange.x, sliceRange.y);
 	rslt.sliceRange = range;
@@ -332,12 +349,13 @@ __device__ CollisionResult resolve_environment_collisions(const int agentId, con
 	result.intersectionOccurred = NO_INTERSECTION;
 
 	if (sliceRange.x == 0) {
-		result = resolve_start_cap_collisions(oldPosition, direction, extDistance, radius, collisionPlane);
+		result = resolve_start_cap_collisions(oldPosition, direction, 
+			extDistance, radius, collisionPlane);
 	}
 	else if (sliceRange.y >= NO_OF_SEGMENTS - 3) {
-		result = resolve_end_cap_collisions(oldPosition, direction, extDistance, radius, collisionPlane);
+		result = resolve_end_cap_collisions(oldPosition, direction, 
+			extDistance, radius, collisionPlane);
 	}
-
 	if (result.intersectionOccurred == INTERSECTION_OCCURRED) {
 		extDistance = result.distanceToMove - (INTERSECTION_BUFFER);
 		if (extDistance < 0) {
@@ -347,7 +365,6 @@ __device__ CollisionResult resolve_environment_collisions(const int agentId, con
 		rslt.collisionOccurred = COLLISION_OCCURRED;
 		rslt.collisionPlaneNormal = make_float3(collisionPlane);
 	}
-
 	if (distance_to_move == 0) {
 		rslt.distanceToMove = 0;
 		rslt.newSegmentIndex = currentSegment;
@@ -355,19 +372,19 @@ __device__ CollisionResult resolve_environment_collisions(const int agentId, con
 		return rslt;
 	}
 
-	
-
 	extDistance = distance_to_move + INTERSECTION_BUFFER;
-	result = resolve_strip_collisions(range, oldPosition, direction, extDistance, radius, collisionPlane);
-
-	if (result.intersectionOccurred == INTERSECTION_OCCURRED  && result.distanceToMove < extDistance ) {
+	result = resolve_strip_collisions(range, oldPosition, direction, 
+		extDistance, radius, collisionPlane);
+	if (result.intersectionOccurred == INTERSECTION_OCCURRED
+		&& result.distanceToMove < extDistance ) {
 		extDistance = result.distanceToMove - INTERSECTION_BUFFER;
 		if (extDistance < 0) {
 			extDistance = 0;
 		}
 
 		if (extDistance > 0) {
-			newSegment = determine_segment_from_position(range, oldPosition + (direction * extDistance));
+			newSegment = determine_segment_from_position(range, 
+			oldPosition + (direction * extDistance));
 		}
 
 		distance_to_move = extDistance;
@@ -375,8 +392,8 @@ __device__ CollisionResult resolve_environment_collisions(const int agentId, con
 		rslt.collisionPlaneNormal = (make_float3(collisionPlane));
 	}
 	else {
-		newSegment = determine_segment_from_position(range, oldPosition + (direction * distance_to_move));
-		//rslt.collisionOccurred = NO_COLLISION;
+		newSegment = determine_segment_from_position(range, 
+			oldPosition + (direction * distance_to_move));
 	}
 
 	

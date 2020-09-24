@@ -901,9 +901,6 @@ extern "C" void closeFlameBinaryOutputFile(int noOfIterations, int_64 simulation
 /* Custom Simulation Types */
 extern "C" void runCustomSimulationType(int itterations, int repetitionNo, int writeout_interval);
 
-/* Re-Initialise Random Number Generator */
-//extern "C" void reinit_RNG(int seed);
-
 /* END FLAME GPU EXTENSIONS */
 
 

@@ -41,7 +41,7 @@ EXAMPLE_BIN_DIR := $(FLAMEGPU_ROOT)bin
 EXAMPLE_BUILD_DIR := ./build
 
 # Custom gencode arguments for this model (if any), otherwise the defaults for FLAME GPU are used from common.mk
-SMS ?= 37 50 60
+SMS ?= 61
 
 # Optionally Disable XSLT generation of certain files. 
 # TRANSFORM_HEADER_XSLT_DISABLED := 1

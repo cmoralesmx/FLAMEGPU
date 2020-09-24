@@ -233,13 +233,6 @@ void readInitialStates(char* inputpath, <xsl:for-each select="gpu:xmodel/xmml:xa
   {
   PROFILE_SCOPED_RANGE("readInitialStates");
 
-  /* FLAME GPU EXTENSIONS SECTION */
-  //int in_environment = 0;
-  //int in_env_variant_description = 0;
-  //int in_env_data_path = 0;
-
-  /* END FLAME GPU EXTENSIONS */
-
   int temp = 0;
   int* itno = &amp;temp;
 
@@ -1583,15 +1576,13 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   }
 
   void closeFlameBinaryOutputFile(int noOfRecords, int_64 simulationRunTime) {
-  if (file != NULL) {
-  fseek64(file, sizeof(char) + sizeof(int_64), SEEK_SET);
-  fwrite(&amp;simulationRunTime, sizeof(int_64), 1, file);
-  //fseek64(file, iterationOffsetLocation, SEEK_SET);
-  //writeIterationOffsetTable(noOfRecords);
-  fseek64(file, 0, SEEK_END);
-  fclose(file);
-  file = NULL;
-  }
+    if (file != NULL) {
+        fseek64(file, sizeof(char) + sizeof(int_64), SEEK_SET);
+        fwrite(&amp;simulationRunTime, sizeof(int_64), 1, file);
+        fseek64(file, 0, SEEK_END);
+        fclose(file);
+        file = NULL;
+    }
   }
 
   #ifdef _MSC_VER

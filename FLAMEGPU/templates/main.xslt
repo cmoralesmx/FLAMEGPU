@@ -461,7 +461,7 @@ extern "C" void setSimulationDescription(const char * desc) {
   }
 
   //CUDA stop timing
-  cudaThreadSynchronize();
+  cudaDeviceSynchronize();
   //sdkStopTimer(&amp;timer);
     //float accurateRunTime = sdkGetTimerValue(&amp;timer);
     int_64 simulationRunTime = 999; //(int_64)lroundf(accurateRunTime);
@@ -533,11 +533,11 @@ int main( int argc, char** argv)
 
 	// Launch the main loop with / without xml output.
 	if(outputXMLFrequency &gt; 0){
-    if(binaryOutput > 0){
-      runConsoleWithFLBOutput(iterations, 0, outputXMLFrequency);
-    } else {
-		  runConsoleWithXMLOutput(iterations, outputXMLFrequency);
-    }
+		if(binaryOutput > 0){
+			runConsoleWithFLBOutput(iterations, 0, outputXMLFrequency);
+		} else {
+			runConsoleWithXMLOutput(iterations, outputXMLFrequency);
+		}
 	} else {
 		runConsoleWithoutXMLOutput(iterations);	
 	}

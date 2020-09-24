@@ -37,11 +37,12 @@ struct CollisionDetails {
 /*Copies model / collision detection data stored in environment_definition.bin into GPU memory*/
 __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 
-	char data[500];
+	char data[470];
 	/*	The data path is loaded from the 0.XML file */
 	int pathLength = getDataPath(data);
 
 	if (pathLength == 0) {
+		printf("WARNING: pathLength is 0\n");
 		initialiseGPUData();
 	}
 	else {
@@ -276,7 +277,8 @@ __device__ void AttachToEpithelium(xmachine_memory_Sperm* sperm) {
 }
 
 /*Resolves agent to oviduct collisions*/
-__device__ bool ResolveCollisions(xmachine_memory_Sperm* sperm, Matrix& spermMatrix, float movementDistance, float3 direction, CollisionDetails &collisionDetails, RNG_rand48* rand48) {
+__device__ bool ResolveCollisions(xmachine_memory_Sperm* sperm, Matrix& spermMatrix, 
+float movementDistance, float3 direction, CollisionDetails &collisionDetails) {
 
 	float3 oldPosition;
 	float3 newPosition;
@@ -293,7 +295,8 @@ __device__ bool ResolveCollisions(xmachine_memory_Sperm* sperm, Matrix& spermMat
 
 	int currentSegment = sperm->oviductSegment;
 
-	result = resolve_environment_collisions(sperm->id, currentSegment, oldPosition, direction, movementDistance, Const_SpermRadius);
+	result = resolve_environment_collisions(sperm->id, currentSegment, 
+		oldPosition, direction, movementDistance, Const_SpermRadius);
 
 	sperm->oviductSegment = result.newSegmentIndex;
 
@@ -309,10 +312,11 @@ __device__ bool ResolveCollisions(xmachine_memory_Sperm* sperm, Matrix& spermMat
 	bool checkOocyteCollision = (d_current_iteration_no >= Const_OocyteFertilityStartTime);
 
 	if (checkOocyteCollision) {
-		for(int i=0;i<NoOfOocytes;i++) {
+		for(int i=0; i < NoOfOocytes;i++) {
 			float3 pointOnLine;
 			if (SharedOocyteUniqueEnvironment[i] == sperm->uniqueEnvironmentNo) {
-				float distToLine = CalculateDistanceFromPointToLine(SharedOocytePosition[i], oldPosition, newPosition, pointOnLine);
+				float distToLine = CalculateDistanceFromPointToLine(SharedOocytePosition[i], 
+					oldPosition, newPosition, pointOnLine);
 				if (distToLine >= 0 && distToLine < (Const_OocyteRadius + Const_SpermRadius)) {
 					oocyteCollisionID = SharedOocyteID[i];
 					oocyteCollisionPosition = SharedOocytePosition[i];
@@ -395,7 +399,7 @@ __FLAME_GPU_FUNC__ int Sperm_Init(xmachine_memory_Sperm* sperm, RNG_rand48* rand
 	CollisionDetails collisionDetails;
 
 	/* Identify Collisions */
-	ResolveCollisions(sperm, spermMatrix, 300, direction, collisionDetails, rand48);
+	ResolveCollisions(sperm, spermMatrix, 300, direction, collisionDetails);
 
 	
 	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED)) {
@@ -423,10 +427,6 @@ __FLAME_GPU_FUNC__ int Sperm_Capacitate(xmachine_memory_Sperm* sperm, RNG_rand48
 		SetActivationState(sperm, ACTIVATION_STATE_CAPACITATED);
 		sperm->remainingLifeTime = Const_CapacitatedSpermLife;
 	}
-	else {
-		//No State Change
-	}
-
 	return 0;
 }
 
@@ -437,11 +437,7 @@ __FLAME_GPU_FUNC__ int Sperm_Capacitate(xmachine_memory_Sperm* sperm, RNG_rand48
 __device__ bool HandleSurfaceInteraction(xmachine_memory_Sperm* sperm, Matrix& spermMatrix, CollisionDetails collisionDetails, RNG_rand48* rand48, float attachmentThreshold) {
 	bool resolved = false;
 	if (TestCondition(attachmentThreshold, rand48)) {
-
-		/* Reflection (180) */
-		//Reflection180(spermMatrix, collisionDetails.collisionPlaneNormal, rand48);
 		HalfConicReflection(spermMatrix, collisionDetails.collisionPlaneNormal, Const_DetachmentMaxRotationAngle, rand48);
-	//	Reflection90(spermMatrix, collisionDetails.collisionPlaneNormal, rand48);
 		/* Move to attached to epithelium state */
 		AttachToEpithelium(sperm);
 		resolved = true;
@@ -449,7 +445,6 @@ __device__ bool HandleSurfaceInteraction(xmachine_memory_Sperm* sperm, Matrix& s
 	else {
 		/* Reflection */
 		HalfConicReflection(spermMatrix, collisionDetails.collisionPlaneNormal, Const_ReflectionMaxRotationAngle, rand48);
-		//Reflection(spermMatrix, collisionDetails.collisionPlaneNormal, rand48);
 	}
 	
 	return resolved;
@@ -460,7 +455,8 @@ __device__ bool HandleSurfaceInteraction(xmachine_memory_Sperm* sperm, Matrix& s
 #endif
 
 /*Moves forward a single iteration*/
-__device__ bool SingleProgressiveMovement(xmachine_memory_Sperm* sperm, Matrix& spermMatrix, RNG_rand48* rand48, float distanceToMove) {
+__device__ bool SingleProgressiveMovement(xmachine_memory_Sperm* sperm, 
+	Matrix& spermMatrix, RNG_rand48* rand48, float distanceToMove) {
 
 	CollisionDetails collisionDetails;
 
@@ -469,7 +465,7 @@ __device__ bool SingleProgressiveMovement(xmachine_memory_Sperm* sperm, Matrix& 
 	float3 direction = MatrixGetDirection(spermMatrix);
 
 	/* Identify Collisions */
-	resolved = ResolveCollisions(sperm, spermMatrix, distanceToMove, direction, collisionDetails, rand48);
+	resolved = ResolveCollisions(sperm, spermMatrix, distanceToMove, direction, collisionDetails);
 
 	/* Collide with surface? */
 	if (HasState(sperm, COLLISION_STATE_TOUCHING_EPITHELIUM)) {
@@ -477,19 +473,14 @@ __device__ bool SingleProgressiveMovement(xmachine_memory_Sperm* sperm, Matrix& 
 		if (HandleSurfaceInteraction(sperm, spermMatrix, collisionDetails, rand48, Const_AttachmentThresholdProgressive)) {
 			resolved = true;
 		}
-		else {
-			//Reflection(spermMatrix, collisionDetails.collisionPlaneNormal, rand48);
-		}
-
 	}
 
 	return resolved;
 
 }
 
-
-/*Moves forward at small steps, progressively performing collision detection*/
-__FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm, xmachine_message_oocytePosition_list* oocytePositionList, RNG_rand48* rand48) {
+__FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm, 
+	xmachine_message_oocytePosition_list* oocytePositionList, RNG_rand48* rand48) {
 	//Pre cache all oocyte positions in shared memory to allow for multiple iterative loops and early exit for out of bounds agents (limitations of flame GPU).
 	GenerateOocytePositionCache(oocytePositionList);
 
@@ -529,17 +520,13 @@ __device__ bool SingleNonProgressiveMovement(xmachine_memory_Sperm* sperm, Matri
 
 	float3 direction = MatrixGetDirection(spermMatrix);
 
-	resolved = ResolveCollisions(sperm, spermMatrix, distanceToMove, direction, collisionDetails, rand48);
+	resolved = ResolveCollisions(sperm, spermMatrix, distanceToMove, direction, collisionDetails);
 
 	/* Collide with surface? */
 	if (HasState(sperm, COLLISION_STATE_TOUCHING_EPITHELIUM)) {
 
 		if (HandleSurfaceInteraction(sperm, spermMatrix, collisionDetails, rand48, Const_AttachmentThresholdNonProgressive)) {
 			resolved = true;
-		}
-		else {
-			//RandomDirection360(spermMatrix, rand48);
-			//ConstrainedRotation(spermMatrix, rand48);
 		}
 	}
 
@@ -613,7 +600,6 @@ __FLAME_GPU_FUNC__ int Sperm_RegulateState(xmachine_memory_Sperm* sperm) {
 			SetActivationState(sperm, ACTIVATION_STATE_DEAD);
 		}
 	}
-	//if (sperm->remainingLifeTime > 0)
 	return 0;
 }
 

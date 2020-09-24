@@ -40,7 +40,8 @@ struct IntersectionResult {
 };
 
 
-__device__ IntersectionResult make_intersection_result(float distanceToMove, bool intersectionOccurred) {
+__device__ IntersectionResult make_intersection_result(float distanceToMove, 
+	bool intersectionOccurred) {
 	IntersectionResult rslt;
 	rslt.distanceToMove = distanceToMove;
 	rslt.intersectionOccurred = intersectionOccurred;

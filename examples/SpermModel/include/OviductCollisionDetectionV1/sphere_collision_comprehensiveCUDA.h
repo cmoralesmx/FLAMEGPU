@@ -30,24 +30,10 @@ __device__ IntersectionResult testIntersectionTriSphere(const TrianglePlane &tp,
 #pragma region Plane Functions
 #endif
 
-
-/*__device__ void	GetBasisVectors(const Plane &plane, float3 &outU, float3 &outV) { 
-	float3 planeNormal = make_float3(plane);
-	outU = GetPerpendicular(planeNormal);
-	outV = cross(planeNormal, outU); 
-} */
-
 // Convert a point from world space to plane space (3D -> 2D)
 __device__ float2 ConvertWorldToPlane(const float3 &inU, const float3 &inV, const float3 &inPoint) {
 	return make_float2(dot(inU,inPoint), dot(inV,inPoint));
 }
-
-// Convert a point from world space to plane space (3D -> 2D)
-/*__device__ float2	ConvertWorldToPlane(const Plane &plane, const float3 &inPoint) {
-	float3 u, v;
-	GetBasisVectors(plane, u, v);
-	return sConvertWorldToPlane(u, v, inPoint);
-}*/
 
 __device__ float3 ConvertPlaneToWorld(const Plane &plane, const float3 &inU, const float3 &inV, const float2 &inPoint) {
 	return (inU * inPoint.x + inV * inPoint.y - make_float3(plane) * plane.w);
@@ -67,29 +53,21 @@ __device__ float3 ConvertPlaneToWorld(const Plane &plane, const float3 &inU, con
  * Modified from PolygonContains for efficiency on GPU
 */
 __device__ bool TriangleContains(const TrianglePlane &tp,  const float2 &inPoint) {
-	//float2 v1;
-	//float2 v2;
 	float2 v1_v2;
 	float2 v1_point;
 
-	//v1 = tp.p0;
-	//v2 = tp.p2;
 	v1_v2 = tp.p2 - tp.p0;
 	v1_point = inPoint - tp.p0;
 	if (v1_v2.x * v1_point.y - v1_point.x * v1_v2.y > 0.0f) {
 		return false;
 	}
 
-	//v1 = tp.p1;
-	//v2 = tp.p0;
 	v1_v2 = tp.p0 - tp.p1;
 	v1_point = inPoint - tp.p1;
 	if (v1_v2.x * v1_point.y - v1_point.x * v1_v2.y > 0.0f) {
 		return false;
 	}
 
-	//v1 = tp.p2;
-	//v2 = tp.p1;
 	v1_v2 = tp.p1 - tp.p2;
 	v1_point = inPoint - tp.p2;
 	if (v1_v2.x * v1_point.y - v1_point.x * v1_v2.y > 0.0f) {
@@ -98,8 +76,6 @@ __device__ bool TriangleContains(const TrianglePlane &tp,  const float2 &inPoint
 
 	return true;
 }
-
-
 
 /*
  * Modified from PolygonCircleIntersect for efficiency on GPU
