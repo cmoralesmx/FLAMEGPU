@@ -896,7 +896,7 @@ extern "C" void saveIterationDataToCopyOnly(<xsl:for-each select="gpu:xmodel/xmm
 extern "C" void createBinaryOutputFile(char* outputpath);
 extern "C" void closeBinaryOutputFile();
 extern "C" void createFlameBinaryOutputFile(char* outputpath, int noOfRecords, const char* simulationDescription, int repetitionNo);
-extern "C" void closeFlameBinaryOutputFile(int noOfIterations, int_64 simulationRunTime);
+extern "C" void closeFlameBinaryOutputFile(int_64 simulationRunTime);
 
 /* Custom Simulation Types */
 extern "C" void runCustomSimulationType(int itterations, int repetitionNo, int writeout_interval);

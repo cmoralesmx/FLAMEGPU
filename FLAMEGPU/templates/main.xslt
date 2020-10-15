@@ -404,14 +404,14 @@ extern "C" void setSimulationDescription(const char * desc) {
 }
 
 //  runCustomSimulationType(itterations, repetitionNo, writeout_interval);
-  /*
-   * Runs the simulation and outputs to uncompressed Flame Binary (FLB) format
-   */
-  void runConsoleWithFLBOutput(int noOfIterations, int repetitionNo, int writeout_interval) {
+/*
+* Runs the simulation and outputs to uncompressed Flame Binary (FLB) format
+*/
+void runConsoleWithFLBOutput(int noOfIterations, int repetitionNo, int writeout_interval) {
     PROFILE_SCOPED_RANGE("runConsoleWithFLBOutput");
     printf("\r\nOutput to Flame Binary (FLB) format\r\n");
     printf("Repetition %i - %i iterations to process\r\n", repetitionNo, noOfIterations);
-    printf("Progress Interval: 5 Seconds\r\n\r\n");
+    printf("Progress Interval: %d iterations\r\n\r\n", writeout_interval);
     int noOfRecords = noOfIterations + 1;
     createFlameBinaryOutputFile(outputpath, noOfRecords, simulationDescription, repetitionNo);
 
@@ -423,59 +423,33 @@ extern "C" void setSimulationDescription(const char * desc) {
         <xsl:otherwise>,</xsl:otherwise>
       </xsl:choose>
     </xsl:for-each>
-
-    /*StopWatchInterface *timer=NULL;
-    sdkCreateTimer(&amp;timer);
-    sdkResetTimer(&amp;timer);
-    sdkStartTimer(&amp;timer);
-
-    clock_t begin = clock();
-    clock_t current;*/
+	printf("Iteration 0 written to FLB\n");
 
     printf("Processing Simulation...\n");
 
     for (int i=1; i&lt;= noOfIterations; i++) {
-  
-  
+      	//single simulation iteration
+      	singleIteration();
 
-      //single simulation iteration
-      singleIteration();
+		if ((i)%writeout_interval == 0 || (i) == noOfIterations) {
+			saveIterationDataToFlameBinary(i, <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">
+				//<xsl:value-of select="xmml:name"/> state <xsl:value-of select="../../xmml:name"/> agents
+				get_host_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_agents(), get_device_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_agents(), get_agent_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count()<xsl:choose>
+				<xsl:when test="position()=last()">);</xsl:when>
+				<xsl:otherwise>,</xsl:otherwise>
+				</xsl:choose>
+			</xsl:for-each>
+			printf("Iteration %i written to FLB\n", i);
+		}
+	
+		if((i)%1000==0){
+			printf("Completed Simulation Step %i\n", i);
+		}
+	}
 
-  if ((i)%writeout_interval == 0 || (i) == noOfIterations) {
-      saveIterationDataToFlameBinary(i, <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">
-        //<xsl:value-of select="xmml:name"/> state <xsl:value-of select="../../xmml:name"/> agents
-        get_host_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_agents(), get_device_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_agents(), get_agent_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count()<xsl:choose>
-          <xsl:when test="position()=last()">);</xsl:when>
-          <xsl:otherwise>,</xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-  }
-  /*current = clock();
-  if (((current - begin)/(float)CLOCKS_PER_SEC) >= 5) {
-  begin = current;
-  printf("Completed Simulation Step %i\n", i);
-  }*/
-    if((i)%100==0){
-      printf("Completed Simulation Step %i\n", i);
-    }
-  }
-
-  //CUDA stop timing
-  cudaDeviceSynchronize();
-  //sdkStopTimer(&amp;timer);
-    //float accurateRunTime = sdkGetTimerValue(&amp;timer);
-    int_64 simulationRunTime = 999; //(int_64)lroundf(accurateRunTime);
-
-    /*int totalSeconds = (int)floor(accurateRunTime / (float)1000);
-    int totalMinutes =  (int)floor(totalSeconds / (float)60);
-    int totalHours =  (int)floor(totalMinutes / (float)60);
-    float remainderms = ((accurateRunTime/1000.0f) - ((((totalHours * 60) + totalMinutes) * 60)));
-
-    printf( "Total Processing time: %f (ms), [%02i:%02i:%07.4f] (hh:mm:ss.mmmm)\n", accurateRunTime, totalHours, totalMinutes, remainderms);
-    sdkDeleteTimer(&amp;timer);*/
-
-    closeFlameBinaryOutputFile(noOfRecords, simulationRunTime);
-  }
+  	//CUDA stop timing
+  	cudaDeviceSynchronize();
+}
 /* END FLAME GPU EXTENSIONS */
 
 /**
@@ -549,6 +523,8 @@ int main( int argc, char** argv)
 
 	cudaEventElapsedTime(&amp;milliseconds, start, stop);
 	printf( "Total Processing time: %f (ms)\n", milliseconds);
+	if(binaryOutput > 0)
+		closeFlameBinaryOutputFile((int_64)milliseconds);
 #endif
 
 	cleanup();

@@ -24,10 +24,6 @@ __device__ CollisionResult resolve_environment_collisions(const int currentSegme
 * Returns NO_COLLISION otherwise.
 */
 
-#ifdef _MSC_VER
-#pragma region Slice Calculation Functions
-#endif
-
 /*
  * Determines the current segment of the oviduct. Sign distance test is performed against all slice planes within range.
  * If the current position is after the previous slice, but before the next slice, then the current segment and distance
@@ -136,14 +132,6 @@ __device__ int2 calculate_slice_range(const int agentId, const int currentSegmen
 	return make_int2(minSlice >= 0 ? minSlice : 0, maxSlice < NO_OF_SEGMENTS_MINUS_ONE ? maxSlice : NO_OF_SEGMENTS_MINUS_ONE);
 }
 
-
-#ifdef _MSC_VER
-#pragma endregion
-
-
-#pragma region End Capping Collision Functions
-#endif
-
 /*
  * Tests for an intersection with the end cap at the end of the mesh. 
  */
@@ -190,11 +178,6 @@ __device__ IntersectionResult resolve_start_cap_collisions(
 
 }
 
-#ifdef _MSC_VER
-#pragma endregion
-#endif
-
-
 //Modified from http://www.softsurfer.com/Archive/algorithm_0102/
 __device__ float CalculateDistanceFromPointToLine(const float3 &pt, float3 line_pt0, float3 line_pt1, float3 &point_on_line) {
     float3 v = line_pt1 - line_pt0;
@@ -215,10 +198,6 @@ __device__ float CalculateDistanceFromPointToLine(const float3 &pt, float3 line_
     point_on_line = line_pt0 + (v * b);
     return distance(pt, point_on_line);
 }
-
-#ifdef _MSC_VER
-#pragma region Model Collision Functions
-#endif
 
 /*
 
@@ -316,10 +295,6 @@ const float radius, float4 &collisionPlane) {
 
 	return make_intersection_result(distance_to_move, intersected);
 }
-
-#ifdef _MSC_VER
-#pragma endregion
-#endif
 
 /*
 * Inputs the previous position and potential new position
