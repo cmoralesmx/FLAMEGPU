@@ -40,11 +40,6 @@ __device__ void MatrixSetDirection(Matrix &mat, const float3 dir);
 __device__ float VectorGetAngleBetween(float3 v1, float3 v2, float3 &outAxis);
 
 
-
-#ifdef _MSC_VER
-#pragma region Property Accessor Functions
-#endif
-
 /// <summary>
 /// Return the direction vector of the matrix
 /// </summary>
@@ -99,29 +94,18 @@ __device__ float VectorGetAngleBetween(float3 v1, float3 v2, float3 &outAxis) {
 	if (length(outAxis) == 0) {
 		outAxis = normalize(GetPerpendicular(v2));
 
-	if (areEqual(v1, v2)) {
-		//outAxis = normalize(GetPerpendicular(v2));
-		return 0;
-	}
-	else /*if (areOpposite(v1, v2))*/{
-		//outAxis = normalize(GetPerpendicular(v2));
-		return 180;
-	}
+		if (areEqual(v1, v2)) {
+			return 0;
+		}
+		else {
+			return 180;
+		}
 	}
 	else {
 		outAxis = normalize(outAxis);
 		return TO_DEGREES(acosf(clamp(dot(v1, v2), -1.0f, 1.0f)));
 	}
 }
-
-#ifdef _MSC_VER
-#pragma endregion
-#endif
-
-#ifdef _MSC_VER
-#pragma region Matrix Functions
-#endif
-
 __device__ Matrix make_matrix(float m0, float m1, float m2, float m3, 
 	float m4, float m5, float m6, float m7, 
 	float m8, float m9, float m10, float m11,
@@ -145,40 +129,6 @@ __device__ Matrix make_matrix(float m0, float m1, float m2, float m3,
 		mat.m[15] = m15;
 		return mat;
 }
-
-/*__device__ Matrix CalculateLocalRotationAroundPointMatrix(float yawRad, float pitchRad, float rollRad, const float3 &rotationPoint, const float3 &direction) {
-	Matrix m;
-	MatrixToIdentity(m);
-	float3 axis;
-	float3 invRotationPoint = rotationPoint;
-
-	float angle = TO_RADIANS(VectorGetAngleBetween(make_float3(ReferenceDirection[0], ReferenceDirection[1], ReferenceDirection[2]), direction, axis));
-
-	MatrixTranslate(m, invRotationPoint);
-	MatrixRotateAnyAxis(m, -angle, axis);
-	if (yawRad != 0) MatrixRotateYaw(m, yawRad);
-	if (pitchRad != 0) MatrixRotatePitch(m, pitchRad);
-	if (rollRad != 0) MatrixRotateRoll(m, rollRad);
-	MatrixRotateAnyAxis(m, angle, axis);
-	MatrixTranslate(m, rotationPoint);
-	return m;
-}
-
-__device__ Matrix CalculateLocalRotationMatrix(float yawRad, float pitchRad, float rollRad, const float3 &direction) {
-	Matrix m;
-	MatrixToIdentity(m);
-	float3 axis;
-
-	float angle = (float)TO_RADIANS(VectorGetAngleBetween(make_float3(ReferenceDirection[0], ReferenceDirection[1], ReferenceDirection[2]), direction, axis));
-
-	MatrixRotateAnyAxis(m, -angle, axis);
-	if (yawRad != 0) MatrixRotateYaw(m, yawRad);
-	if (pitchRad != 0) MatrixRotatePitch(m, pitchRad);
-	if (rollRad != 0) MatrixRotateRoll(m, rollRad);
-	MatrixRotateAnyAxis(m, angle, axis);
-
-	return m;
-}*/
 
 __device__ void CreateIdentityArray(float* a) {
 	a[0] = 1.0f; a[4] = 0.0f; a[8] = 0.0f; a[12] = 0.0f;
@@ -512,21 +462,5 @@ __device__ void MatrixInverse(Matrix &mat) {
 	}
 
 }
-
-
-/*__device__ void MatrixApplyLocalRotation(float yawRad, float pitchRad, float rollRad, const float3 &rotationPoint, const float3 &direction, float3 &position) {
-	Matrix m = CalculateLocalRotationMatrix(yawRad, pitchRad, rollRad, direction);
-
-	position -= rotationPoint;
-
-	MatrixTransformVector(m, position);
-
-	position += rotationPoint;
-
-}*/
-
-#ifdef _MSC_VER
-#pragma endregion
-#endif
 
 #endif

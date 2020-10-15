@@ -1425,124 +1425,104 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
 </xsl:for-each>
 
 
-  /* FLAME GPU EXTENSIONS SECTION */
+/* FLAME GPU EXTENSIONS SECTION */
 
-  //#include &lt;cutil_math.h&gt;
-  #include &lt;time.h&gt;
-  extern "C" int __cdecl fseek64(FILE *, int_64, int);
-  extern "C" int_64 __cdecl ftell64(FILE *);
-  
-  #ifdef _MSC_VER
-  #pragma region Variables
-  #endif
+#include &lt;time.h&gt;
+extern "C" int __cdecl fseek64(FILE *, int_64, int);
+extern "C" int_64 __cdecl ftell64(FILE *);
 
+/* Pointer to binary file */
+FILE *file = NULL;
 
-  /* Pointer to binary file */
-  FILE *file = NULL;
+int fileNumberCounter = 0;
+const int MAX_FILE_SIZE = 2000000000;
 
-  int fileNumberCounter = 0;
-  const int MAX_FILE_SIZE = 2000000000;
+int_64 iterationOffsetLocation = -1;
 
-  int_64 iterationOffsetLocation = -1;
-  //int_64* iterationOffsetTable = NULL;
+void createBinaryOutputFile(char* outputpath) {
+    char data[1000];
+    sprintf(data, "%sTMP_IX%03i.tmp", outputpath, fileNumberCounter);
+    file = fopen(data, "wb+");
+}
 
-  #ifdef _MSC_VER
-  #pragma endregion
+void closeBinaryOutputFile() {
+    if (file != NULL) {
+        fclose(file);
+        file = NULL;
+    }
+}
 
-  #pragma region File Handler Functions
-  #endif
+void ToNext4ByteBoundary() {
+    int_64 pt = ftell64(file);
+    int_64 offset = pt % 4;
+    if (offset > 0) {
+        fseek64(file, 4-offset, SEEK_CUR);
+    }
+}
 
-  void createBinaryOutputFile(char* outputpath) {
-  char data[1000];
-  sprintf(data, "%sTMP_IX%03i.tmp", outputpath, fileNumberCounter);
-  file = fopen(data, "wb+");
-  }
+void ToNext8ByteBoundary() {
+    int_64 pt = ftell64(file);
+    int_64 offset = pt % 8;
+    if (offset > 0) {
+        fseek64(file, 8-offset, SEEK_CUR);
+    }
+}
 
-  void closeBinaryOutputFile() {
-  if (file != NULL) {
-  fclose(file);
-  file = NULL;
-  }
-  }
+void ToNext16ByteBoundary() {
+    int_64 pt = ftell64(file);
+    int_64 offset = pt % 16;
+    if (offset > 0) {
+        fseek64(file, 16-offset, SEEK_CUR);
+    }
+}
 
-  void ToNext4ByteBoundary() {
-  int_64 pt = ftell64(file);
-  int_64 offset = pt % 4;
-  if (offset > 0) {
-  fseek64(file, 4-offset, SEEK_CUR);
-  }
-  }
+void EnsureFileSize(char* outputpath) {
+    fseek64(file, 0, SEEK_END);
+    int_64 pos = ftell64(file);
+    if (pos > MAX_FILE_SIZE) {
+        fclose(file);
+        fileNumberCounter++;
+        createBinaryOutputFile(outputpath);
+    }
+}
 
-  void ToNext8ByteBoundary() {
-  int_64 pt = ftell64(file);
-  int_64 offset = pt % 8;
-  if (offset > 0) {
-  fseek64(file, 8-offset, SEEK_CUR);
-  }
-  }
+inline void writeString(const char* string, int strLen, FILE* f) {
+    fwrite(&amp;strLen, sizeof(int), 1, f);
+    fwrite(string, sizeof(char), strLen, f);
+}
 
-  void ToNext16ByteBoundary() {
-  int_64 pt = ftell64(file);
-  int_64 offset = pt % 16;
-  if (offset > 0) {
-  fseek64(file, 16-offset, SEEK_CUR);
-  }
-  }
+void writeFlameBinaryHeader(int noOfRecords, const char* simulationDescription, const char* variantDescription, int repetitionNo) {
+    char isCompressed = 0;
+    int noOfAgentTypes = <xsl:value-of select="count(gpu:xmodel/xmml:xagents/gpu:xagent)"></xsl:value-of>;
+    int_64 simulationDateTime = (int_64)time(NULL);
+    int_64 simulationRunTime = 0;
+    fwrite(&amp;isCompressed, sizeof(char), 1, file);
+    fwrite(&amp;simulationDateTime, sizeof(int_64), 1, file);
+    fwrite(&amp;simulationRunTime, sizeof(int_64), 1, file);
+    fwrite(&amp;noOfAgentTypes, sizeof(int), 1, file);
+    fwrite(&amp;noOfRecords, sizeof(int), 1, file);
+    fwrite(&amp;repetitionNo, sizeof(int), 1, file);
+    writeString("Flame GPU 1.5 extension 0.2", 27, file);
+    writeString(simulationDescription, (int)strlen(simulationDescription), file);
+    writeString(variantDescription, (int)strlen(variantDescription), file);
+}
 
-  void EnsureFileSize(char* outputpath) {
-  fseek64(file, 0, SEEK_END);
-  int_64 pos = ftell64(file);
-  if (pos > MAX_FILE_SIZE) {
-  fclose(file);
-  fileNumberCounter++;
-  createBinaryOutputFile(outputpath);
-  }
-  }
-
-  inline void writeString(const char* string, int strLen, FILE* f) {
-  fwrite(&amp;strLen, sizeof(int), 1, f);
-  fwrite(string, sizeof(char), strLen, f);
-  }
-
-  #ifdef _MSC_VER
-  #pragma endregion
-
-
-  #pragma region Flame Binary Specific Functions
-  #endif
-
-  void writeFlameBinaryHeader(int noOfRecords, const char* simulationDescription, const char* variantDescription, int repetitionNo) {
-  char isCompressed = 0;
-  int noOfAgentTypes = <xsl:value-of select="count(gpu:xmodel/xmml:xagents/gpu:xagent)"></xsl:value-of>;
-  int_64 simulationDateTime = (int_64)time(NULL);
-  int_64 simulationRunTime = 0;
-  fwrite(&amp;isCompressed, sizeof(char), 1, file);
-  fwrite(&amp;simulationDateTime, sizeof(int_64), 1, file);
-  fwrite(&amp;simulationRunTime, sizeof(int_64), 1, file);
-  fwrite(&amp;noOfAgentTypes, sizeof(int), 1, file);
-  fwrite(&amp;noOfRecords, sizeof(int), 1, file);
-  fwrite(&amp;repetitionNo, sizeof(int), 1, file);
-  writeString("Flame GPU 1.0.3 Extension 0.1", 29, file);
-  writeString(simulationDescription, (int)strlen(simulationDescription), file);
-  writeString(variantDescription, (int)strlen(variantDescription), file);
-  }
-
-  const char* string2char(char* ss) {
+const char* string2char(char* ss) {
     const char* s = ss;
     return s;
-  }
-  void writeParameter(const char* parameterName, int nameLength, int typeID) {
-  fwrite(&amp;typeID, sizeof(int), 1, file);
-  writeString(parameterName, nameLength, file);
-  }
+}
+void writeParameter(const char* parameterName, int nameLength, int typeID) {
+    fwrite(&amp;typeID, sizeof(int), 1, file);
+    writeString(parameterName, nameLength, file);
+}
 
-  void writeAgent(int currentAgentTypeID, const char* agentName, int nameLength, int noOfParameters) {
-  fwrite(&amp;currentAgentTypeID, sizeof(int), 1, file);
-  writeString(agentName, nameLength, file);
-  fwrite(&amp;noOfParameters, sizeof(int), 1, file);
-  }
+void writeAgent(int currentAgentTypeID, const char* agentName, int nameLength, int noOfParameters) {
+    fwrite(&amp;currentAgentTypeID, sizeof(int), 1, file);
+    writeString(agentName, nameLength, file);
+    fwrite(&amp;noOfParameters, sizeof(int), 1, file);
+}
 
-  void writeFlameBinaryAgentHeaders() {
+void writeFlameBinaryAgentHeaders() {
   int currentAgentTypeID = 0;
   <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent">
     <xsl:variable name="aName" select="position()"/>
@@ -1560,22 +1540,21 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
     </xsl:for-each>
 
   </xsl:for-each>
-  }
+}
 
-  void createFlameBinaryOutputFile(char* outputpath, int noOfRecords, const char* simulationDescription, int repetitionNo) {
-  char data[1000];
-  sprintf(data, "%soutput_%03i.flb", outputpath, repetitionNo);
-  file = fopen(data, "wb+");
-  writeFlameBinaryHeader(noOfRecords, simulationDescription, variantDescription, repetitionNo);
-  writeFlameBinaryAgentHeaders();
-  ToNext16ByteBoundary();
-  iterationOffsetLocation = ftell64(file);
-  //iterationOffsetTable = (int_64*)malloc((noOfRecords) * sizeof(int_64));
+void createFlameBinaryOutputFile(char* outputpath, int noOfRecords, const char* simulationDescription, int repetitionNo) {
+    char data[1000];
+    sprintf(data, "%soutput_%03i.flb", outputpath, repetitionNo);
+    file = fopen(data, "wb+");
+    writeFlameBinaryHeader(noOfRecords, simulationDescription, variantDescription, repetitionNo);
+    writeFlameBinaryAgentHeaders();
+    ToNext16ByteBoundary();
+    iterationOffsetLocation = ftell64(file);
 
-  fseek64(file, sizeof(int_64) * (noOfRecords), SEEK_CUR);
-  }
+    fseek64(file, sizeof(int_64) * (noOfRecords), SEEK_CUR);
+}
 
-  void closeFlameBinaryOutputFile(int noOfRecords, int_64 simulationRunTime) {
+void closeFlameBinaryOutputFile(int_64 simulationRunTime) {
     if (file != NULL) {
         fseek64(file, sizeof(char) + sizeof(int_64), SEEK_SET);
         fwrite(&amp;simulationRunTime, sizeof(int_64), 1, file);
@@ -1583,62 +1562,61 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
         fclose(file);
         file = NULL;
     }
-  }
+}
 
-  #ifdef _MSC_VER
-  #pragma endregion
 
-  #pragma region Save Iteration Data Functions
-  #endif
-
-  void saveIterationDataToFlameBinary(int iteration_number, <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">
+void saveIterationDataToFlameBinary(int iteration_number, <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">
     xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* d_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, int h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count<xsl:if test="position()!=last()">,</xsl:if>
   </xsl:for-each>) {
-  //Device to host memory transfer
-  <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">
-    cudaMemcpy( h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, d_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, sizeof(xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list), cudaMemcpyDeviceToHost);
-  </xsl:for-each>
-
-
-  ToNext4ByteBoundary();
-  //fwrite(&amp;iteration_number, sizeof(int), 1, file);
-  int_64 chunkOffsetPosition = ftell64(file);
-
-  fseek64(file, chunkOffsetPosition, SEEK_SET);
-  //iterationOffsetTable[iteration_number] = chunkOffsetPosition;
-
-  int chunkSize = 0;
-  fwrite(&amp;chunkSize, sizeof(int), 1, file);
-  int noOfAgents = 0;
-  fwrite(&amp;noOfAgents, sizeof(int), 1, file);
-
-  int currentAgentTypeID = 0;
-
-  <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent">
-    <xsl:for-each select="xmml:states/gpu:state">
-      <xsl:variable name="stateName" select="xmml:name"/>//Write each <xsl:value-of select="../../xmml:name"/> agent to binary
-      for (int i=0; i&lt;h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count; i++){
-      noOfAgents++;
-      fwrite(&amp;currentAgentTypeID, sizeof(int), 1, file);
-      <xsl:for-each select="../../xmml:memory/gpu:variable">
-        fwrite(&amp;h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="$stateName"/>-><xsl:value-of select="xmml:name"/>[i], sizeof h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="$stateName"/>-><xsl:value-of select="xmml:name"/>[i], 1, file);
-      </xsl:for-each>
-      }
+    //Device to host memory transfer
+    <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">
+        cudaMemcpy( h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, d_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, sizeof(xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list), cudaMemcpyDeviceToHost);
     </xsl:for-each>
-    currentAgentTypeID++;
-  </xsl:for-each>
-  chunkSize = (int)(ftell64(file) - chunkOffsetPosition) - sizeof(int);
-  fseek64(file, chunkOffsetPosition, SEEK_SET);
-  fwrite(&amp;chunkSize, sizeof(int), 1, file);
-  fwrite(&amp;noOfAgents, sizeof(int), 1, file);
 
-  fseek64(file, iterationOffsetLocation + (sizeof(int_64) * iteration_number), SEEK_SET);
-  fwrite(&amp;chunkOffsetPosition, sizeof(int_64), 1, file);
+    ToNext4ByteBoundary();
+    int_64 chunkOffsetPosition = ftell64(file);
 
-  fseek64(file, 0, SEEK_END);
-  }
+    fseek64(file, chunkOffsetPosition, SEEK_SET);
 
+    // Placeholders, useful for debugging
+    int chunkSize = 0;
+    fwrite(&amp;chunkSize, sizeof(int), 1, file);
+    int noOfAgents = 0;
+    fwrite(&amp;noOfAgents, sizeof(int), 1, file);
+    
+    printf("  Placeholders, chunkOffsetPosition: %#lx (%ld), chunkSize: %d, noOfAgents: %d \n", chunkOffsetPosition, chunkOffsetPosition, chunkSize, noOfAgents);
 
+    int currentAgentTypeID = 0;
+
+    <xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent">
+        <xsl:for-each select="xmml:states/gpu:state">
+        <xsl:variable name="stateName" select="xmml:name"/>//Write each <xsl:value-of select="../../xmml:name"/> agent to binary
+        for (int i=0; i&lt;h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count; i++){
+            noOfAgents++;
+            fwrite(&amp;currentAgentTypeID, sizeof(int), 1, file);
+            <xsl:for-each select="../../xmml:memory/gpu:variable">
+                fwrite(&amp;h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="$stateName"/>-><xsl:value-of select="xmml:name"/>[i], sizeof h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="$stateName"/>-><xsl:value-of select="xmml:name"/>[i], 1, file);
+            </xsl:for-each>
+        }
+        </xsl:for-each>
+        currentAgentTypeID++;
+    </xsl:for-each>
+
+    chunkSize = (int)(ftell64(file) - chunkOffsetPosition) - sizeof(int);
+    fseek64(file, chunkOffsetPosition, SEEK_SET);
+    fwrite(&amp;chunkSize, sizeof(int), 1, file);
+    fwrite(&amp;noOfAgents, sizeof(int), 1, file);
+
+    printf("    Actual data, chunkOffsetPosition: %#lx (%ld), chunkSize: %d, noOfAgents: %d\n", chunkOffsetPosition, chunkOffsetPosition, chunkSize, noOfAgents);
+
+    int_64 tmpOffsetLoc = iterationOffsetLocation + (sizeof(int_64) * iteration_number);
+    fseek64(file, tmpOffsetLoc, SEEK_SET);
+    fwrite(&amp;chunkOffsetPosition, sizeof(int_64), 1, file);
+
+    printf("    offset table, location: %#lx (%ld), value: %ld\n", tmpOffsetLoc, tmpOffsetLoc, chunkOffsetPosition);
+
+    fseek64(file, 0, SEEK_END);
+}
 
   void saveIterationDataToCopyOnly(<xsl:for-each select="gpu:xmodel/xmml:xagents/gpu:xagent/xmml:states/gpu:state">
     xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* h_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, xmachine_memory_<xsl:value-of select="../../xmml:name"/>_list* d_<xsl:value-of select="../../xmml:name"/>s_<xsl:value-of select="xmml:name"/>, int h_xmachine_memory_<xsl:value-of select="../../xmml:name"/>_<xsl:value-of select="xmml:name"/>_count<xsl:if test="position()!=last()">,</xsl:if>
@@ -1690,10 +1668,6 @@ void load_staticGraph_<xsl:value-of select="$graph_name"/>_from_xml(const char* 
   /* Close the file */
   //fclose(file);
   }
-
-  #ifdef MSC_VER
-  #pragma endregion
-  #endif
 
   /* END FLAME GPU EXTENSIONS */
 
