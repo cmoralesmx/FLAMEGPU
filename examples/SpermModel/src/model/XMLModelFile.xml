@@ -8,6 +8,7 @@
       <name>currentIterationNo</name>
       <description>Keeps track of the current iteration number</description>
     </gpu:variable>
+      <!-- Const_OocyteFertilityStartTime -->
       <gpu:variable>
         <type>float</type>
         <name>Const_OocyteFertilityStartTime</name>
@@ -17,7 +18,8 @@
         <defaultValue>0</defaultValue>
       </gpu:variable>
       
-       <gpu:variable>
+      <!-- Const_CapacitationThreshold -->
+      <gpu:variable>
         <type>float</type>
         <name>Const_CapacitationThreshold</name>
          <description>Threshold Value between [0 1]
@@ -25,13 +27,15 @@
         <defaultValue>0</defaultValue>
       </gpu:variable>
       
+      <!-- Const_SpermFertileLifetime -->
       <gpu:variable>
         <type>float</type>
         <name>Const_SpermFertileLifetime</name>
          <description>Mean total life in seconds of fertile sperm, if capacitated after this time, will not be able to penetrate oocyte. Default (13 * 3600)</description>
         <defaultValue>46800</defaultValue>
       </gpu:variable>
-  
+
+      <!-- Const_AttachmentThresholdProgressive -->
       <gpu:variable>
         <type>float</type>
         <name>Const_AttachmentThresholdProgressive</name>
@@ -39,7 +43,8 @@
          probability that a progressive sperm will attach to the epithelium</description>
         <defaultValue>0.5</defaultValue>
       </gpu:variable>
-      
+
+      <!-- Const_AttachmentThresholdNonProgressive -->
       <gpu:variable>
         <type>float</type>
         <name>Const_AttachmentThresholdNonProgressive</name>
@@ -47,8 +52,9 @@
          probability that a non-progressive sperm will attach to the epithelium</description>
         <defaultValue>0</defaultValue>
       </gpu:variable>
-      
-       <gpu:variable>
+
+      <!-- Const_DetachmentThresholdProgressive -->
+      <gpu:variable>
         <type>float</type>
         <name>Const_DetachmentThresholdProgressive</name>
          <description>Threshold Value between [0 1]
@@ -56,6 +62,7 @@
         <defaultValue>0</defaultValue>
       </gpu:variable>
 
+      <!-- Const_DetachmentThresholdNonProgressive -->
       <gpu:variable>
         <type>float</type>
         <name>Const_DetachmentThresholdNonProgressive</name>
@@ -64,13 +71,15 @@
         <defaultValue>0.5</defaultValue>
       </gpu:variable>
 
+      <!-- Const_CapacitatedSpermLife -->
       <gpu:variable>
         <type>int</type>
         <name>Const_CapacitatedSpermLife</name>
          <description>Mean life in seconds of sperm once capacitated</description>
         <defaultValue>7200</defaultValue>
       </gpu:variable>
-      
+
+      <!-- Const_ProgressiveMin -->
       <gpu:variable>
         <type>float</type>
         <name>Const_ProgressiveMin</name>
@@ -80,6 +89,7 @@
         <defaultValue>10</defaultValue>
       </gpu:variable>
 
+      <!-- Const_ProgressiveMax -->
       <gpu:variable>
         <type>float</type>
         <name>Const_ProgressiveMax</name>
@@ -89,6 +99,7 @@
         <defaultValue>60</defaultValue>
       </gpu:variable>
 
+      <!-- Const_NonProgressiveMin -->
       <gpu:variable>
         <type>float</type>
         <name>Const_NonProgressiveMin</name>
@@ -98,6 +109,7 @@
         <defaultValue>5</defaultValue>
       </gpu:variable>
 
+      <!-- Const_NonProgressiveMax -->
       <gpu:variable>
         <type>float</type>
         <name>Const_NonProgressiveMax</name>
@@ -106,145 +118,214 @@
         </description>
         <defaultValue>10</defaultValue>
       </gpu:variable>
-      
-       <gpu:variable>
+
+      <!-- Const_ReflectionMaxRotationAngle -->
+      <gpu:variable>
         <type>float</type>
         <name>Const_ReflectionMaxRotationAngle</name>
          <description>Angular (half-conic) rotation of sperm when colliding with tissue [0 - 360]</description>
         <defaultValue>60</defaultValue>
       </gpu:variable>
-      
+
+      <!-- Const_DetachmentMaxRotationAngle -->
       <gpu:variable>
         <type>float</type>
         <name>Const_DetachmentMaxRotationAngle</name>
          <description>Angular (half-conic) rotation of sperm when detaching from tissue [0 - 360]</description>
         <defaultValue>90</defaultValue>
       </gpu:variable>
-      
+
+      <!-- Const_NonProgressiveMaxRotationAngle -->
       <gpu:variable>
         <type>float</type>
         <name>Const_NonProgressiveMaxRotationAngle</name>
          <description>Angular (conic) rotation of sperm while moving non-progressively [0 - 360]</description>
         <defaultValue>30</defaultValue>
       </gpu:variable>
-      
+
+      <!-- Const_OocyteRadius -->
       <gpu:variable>
         <type>float</type>
         <name>Const_OocyteRadius</name>
          <description>Radius of the oocyte (excluding OCC)</description>
         <defaultValue>56.65</defaultValue>
       </gpu:variable>
-      
+
+      <!-- Const_SpermRadius -->
       <gpu:variable>
         <type>float</type>
         <name>Const_SpermRadius</name>
          <description>Radius of sphere for sperm head (typically based on head width)</description>
         <defaultValue>4.5</defaultValue>
       </gpu:variable>
-      
-       <gpu:variable>
+
+      <!-- Const_ProgressiveMovementSteps -->
+      <gpu:variable>
         <type>int</type>
         <name>Const_ProgressiveMovementSteps</name>
          <description>Number of steps to subdivide progressive movement, typically based on BCF</description>
         <defaultValue>1</defaultValue>
       </gpu:variable>
-     
-       <gpu:variable>
+
+      <!-- Const_ProgressiveVelocity -->
+      <gpu:variable>
         <type>float</type>
         <name>Const_ProgressiveVelocity</name>
          <description>Progressive Average Path Velocity (VAP) um / s</description>
         <defaultValue>90.6</defaultValue>
       </gpu:variable>
       
-       <gpu:variable>
+      <!-- Const_NonProgressiveVelocity -->
+      <gpu:variable>
         <type>float</type>
         <name>Const_NonProgressiveVelocity</name>
          <description>Non-Progressive Straight Line Velocity (VSL)</description>
         <defaultValue>72.3</defaultValue>
       </gpu:variable>
 
+<!-- EV model extensions -->
+      <!-- Const_IsthLastSlice -->
       <gpu:variable>
         <type>int</type>
         <name>Const_IsthLastSlice</name>
         <defaultValue>599</defaultValue>
       </gpu:variable>
+      <!-- Const_AmpLastSlice -->
       <gpu:variable>
         <type>int</type>
         <name>Const_AmpLastSlice</name>
         <defaultValue>1199</defaultValue>
       </gpu:variable>
+
+      <!-- effect on lifespan (microvesicles) -->
+      <gpu:variable>
+        <type>int</type>
+        <name>Const_LifespanAffectedByMicroVesicles</name>
+        <description>Flag to enable the effect of MVs in sperm lifespan</description>
+        <defaultValue>0</defaultValue>
+      </gpu:variable>
+      <!-- effect on lifespan (exosomes) -->
+      <gpu:variable>
+        <type>int</type>
+        <name>Const_LifespanAffectedByExosomes</name>
+        <description>Flag to enable the effect of MVs in sperm lifespan</description>
+        <defaultValue>0</defaultValue>
+      </gpu:variable>
+      <!-- effect on Progressive Movement (exosomes) -->
+      <gpu:variable>
+        <type>int</type>
+        <name>Const_ProgressiveMovementAffectedByExosomes</name>
+        <description>Flag to enable the effect of MVs in sperm lifespan</description>
+        <defaultValue>1</defaultValue>
+      </gpu:variable>
+      <!-- Const_PercVelocityDueToExosomes -->
       <gpu:variable>
         <type>float</type>
         <name>Const_PercVelocityDueToExosomes</name>
         <description>Percentage of progresive velocity attributed to Exosomes</description>
         <defaultValue>0.6</defaultValue>
       </gpu:variable>
+      <!-- effect on detachment threshold (exosomes) -->
+      <gpu:variable>
+        <type>int</type>
+        <name>Const_DetachmentAffectedByExosomes</name>
+        <description>Flag to enable the effect of MVs in sperm lifespan</description>
+        <defaultValue>0</defaultValue>
+      </gpu:variable>
+
+      <!-- Const_BaseProgressiveVelocity -->
       <gpu:variable>
         <type>float</type>
         <name>Const_BaseProgressiveVelocity</name>
       </gpu:variable>
 
+      <!-- Maximum concentration values
+          Const_IsthMaxExoConc
+          Const_IsthMaxMvsConc
+          Const_AmpMaxExoConc
+          Const_AmpMaxMvsConc
+          NOTE These values are intended to be fixed across simulation runs -->
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_IsthMaxExoConc</name>
+        <description>Maximum exosome concentration in the isthmus</description>
+        <defaultValue>25590.9</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_IsthMaxMvsConc</name>
+        <description>Maximum micro vesicles concentration in the isthmus</description>
+        <defaultValue>15516.8</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_AmpMaxExoConc</name>
+        <description>Maximum exosome concentration in the ampulla</description>
+        <defaultValue>109723.2</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_AmpMaxMvsConc</name>
+        <description>Maximum micro vesicles concentration in the ampulla</description>
+        <defaultValue>87735.2</defaultValue>
+      </gpu:variable>
+
+      <!-- Const_IsthExoConcMean -->
       <gpu:variable>
         <type>float</type>
         <name>Const_IsthExoConcMean</name>
         <description>Exosomes concentration in the isthmus (mean) in particles per square micro meter</description>
-        <defaultValue>3.5</defaultValue>
       </gpu:variable>
+      <!-- Const_IsthExoConcSDev -->
       <gpu:variable>
         <type>float</type>
         <name>Const_IsthExoConcSDev</name>
         <description>Exosomes concentration in the isthmus (sd)</description>
-        <defaultValue>0.5</defaultValue>
       </gpu:variable>
+      <!-- Const_IsthMvsConcMean -->
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_IsthMvsConcMean</name>
+        <description>Micro vesicles concentration in the isthmus (mean)</description>
+      </gpu:variable>
+      <!-- Const_IsthMvsConcSDev -->
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_IsthMvsConcSDev</name>
+        <description>Micro vesicles concentration in the isthmus (sd)</description>
+      </gpu:variable>
+
+      <!-- Const_AmpExoConcMean -->
       <gpu:variable>
         <type>float</type>
         <name>Const_AmpExoConcMean</name>
         <description>Exosomes concentration in the ampulla (mean)</description>
-        <defaultValue>1.5</defaultValue>
       </gpu:variable>
+      <!-- Const_AmpExoConcSDev -->
       <gpu:variable>
         <type>float</type>
         <name>Const_AmpExoConcSDev</name>
         <description>Exosomes concentration in the ampulla (sd)</description>
-        <defaultValue>0.2</defaultValue>
       </gpu:variable>
+      <!-- Const_AmpMvsConcMean -->
       <gpu:variable>
         <type>float</type>
-        <name>Const_MaxExoConc</name>
-        <description>Maximum exosome concentration in the oviduct</description>
-        <defaultValue>1.0</defaultValue>
-      </gpu:variable>
-
-      <gpu:variable>
-        <type>float</type>
-        <name>Const_IsthMvConcMean</name>
-        <description>Micro vesicles concentration in the isthmus (mean)</description>
-        <defaultValue>2.5</defaultValue>
-      </gpu:variable>
-      <gpu:variable>
-        <type>float</type>
-        <name>Const_IsthMvConcSDev</name>
-        <description>Micro vesicles concentration in the isthmus (sd)</description>
-        <defaultValue>0.5</defaultValue>
-      </gpu:variable>      
-      <gpu:variable>
-        <type>float</type>
-        <name>Const_AmpMvConcMean</name>
+        <name>Const_AmpMvsConcMean</name>
         <description>Mean micro vesicles concentration in the ampulla (mean)</description>
-        <defaultValue>1.5</defaultValue>
       </gpu:variable>
+      <!-- Const_AmpMvsConcSDev -->
       <gpu:variable>
         <type>float</type>
-        <name>Const_AmpMvConcSDev</name>
+        <name>Const_AmpMvsConcSDev</name>
         <description>Mean micro vesicles concentration in the ampulla (sd)</description>
-        <defaultValue>0.2</defaultValue>
       </gpu:variable>
+<!-- EV model extensions end -->
 
     </gpu:constants>
     <gpu:functionFiles>
       <file>functions.c</file>
     </gpu:functionFiles>
-	<gpu:definitions>
+	  <gpu:definitions>
        <gpu:definition>
         <gpu:name>MAX_NO_OF_UNIQUE_ENVIRONMENTS</gpu:name>
         <gpu:value>10</gpu:value>
@@ -280,7 +361,8 @@
       <gpu:definition>
         <gpu:name>ACTIVATION_STATE_MASK</gpu:name>
         <gpu:value>7</gpu:value>
-        <!-- (ACTIVATION_STATE_DEAD | ACTIVATION_STATE_PRE_CAPACITATED | ACTIVATION_STATE_CAPACITATED | ACTIVATION_STATE_POST_CAPACITATED)-->
+        <!-- (ACTIVATION_STATE_DEAD | ACTIVATION_STATE_PRE_CAPACITATED | 
+          ACTIVATION_STATE_CAPACITATED | ACTIVATION_STATE_POST_CAPACITATED) -->
         <!-- 0x0001 1111 1111 -->
       </gpu:definition>
       <gpu:definition>
@@ -323,7 +405,9 @@
       <gpu:definition>
         <gpu:name>COLLISION_STATE_MASK</gpu:name>
         <gpu:value>480</gpu:value>
-        <!-- (COLLISION_STATE_FREE | COLLISION_STATE_TOUCHING_EPITHELIUM | COLLISION_STATE_ATTACHED_TO_EPITHELIUM | COLLISION_STATE_ATTACHED_TO_OOCYTE)-->
+        <!-- (COLLISION_STATE_FREE | COLLISION_STATE_TOUCHING_EPITHELIUM | 
+          COLLISION_STATE_ATTACHED_TO_EPITHELIUM | 
+          COLLISION_STATE_ATTACHED_TO_OOCYTE)-->
         <!-- 0x1111 1000 0111 -->
       </gpu:definition>
     </gpu:definitions>
@@ -453,6 +537,23 @@
           <name>movementStateTimer</name>
           <description></description>
         </gpu:variable>
+        <gpu:variable>
+          <type>int</type>
+          <name>pendingReduction</name>
+          <description></description>
+        </gpu:variable>
+
+        <gpu:variable>
+          <type>float</type>
+          <name>exoConcentration</name>
+          <description>Exosomes concentration at current location</description>
+        </gpu:variable>
+        <gpu:variable>
+          <type>float</type>
+          <name>mvsConcentration</name>
+          <description>Micro vesicles concentration at current location</description>
+        </gpu:variable>
+
       </memory>
       <functions>
         <gpu:function>
@@ -463,6 +564,7 @@
           <gpu:reallocate>false</gpu:reallocate>
           <gpu:RNG>true</gpu:RNG>
         </gpu:function>
+        <!-- Sperm_Capacitate -->
         <gpu:function>
           <name>Sperm_Capacitate</name>
           <description>Performs capacitation of pre-capacitated sperm</description>
@@ -489,8 +591,8 @@
           <gpu:reallocate>false</gpu:reallocate>
           <gpu:RNG>true</gpu:RNG>
         </gpu:function>
-
-       <gpu:function>
+        <!-- Sperm_NonProgressiveMovement -->
+        <gpu:function>
           <name>Sperm_NonProgressiveMovement</name>
           <description>Move sperm asynchronously</description>
           <currentState>initial_state</currentState>
@@ -520,8 +622,8 @@
           <gpu:reallocate>false</gpu:reallocate>
           <gpu:RNG>true</gpu:RNG>
         </gpu:function>
-        
-		<gpu:function>
+        <!-- Sperm_ProgressiveMovement (affected by EV) -->
+		    <gpu:function>
           <name>Sperm_ProgressiveMovement</name>
           <description>Move sperm forward</description>
           <currentState>initial_state</currentState>
@@ -551,9 +653,7 @@
           <gpu:reallocate>false</gpu:reallocate>
           <gpu:RNG>true</gpu:RNG>
         </gpu:function>
-
-       
-
+        <!-- Sperm_DetachFromEpithelium (affected by EV exo) -->
         <gpu:function>
           <name>Sperm_DetachFromEpithelium</name>
           <description>Sperm tries to detach from epithelium</description>
@@ -580,8 +680,8 @@
           <gpu:reallocate>false</gpu:reallocate>
           <gpu:RNG>true</gpu:RNG>
         </gpu:function>
-
-         <gpu:function>
+        <!-- Sperm_SwitchMovementState -->
+        <gpu:function>
           <name>Sperm_SwitchMovementState</name>
           <description>Switch between non-progressive and progressive</description>
           <currentState>post_movement_state</currentState>
@@ -606,8 +706,8 @@
           <gpu:reallocate>false</gpu:reallocate>
           <gpu:RNG>true</gpu:RNG>
         </gpu:function>
-
-       <gpu:function>
+        <!-- Sperm_RegulateState (affected by EV mvs) -->
+        <gpu:function>
           <name>Sperm_RegulateState</name>
           <description>Return to initial state</description>
           <currentState>final_state</currentState>
@@ -615,9 +715,18 @@
           <gpu:reallocate>false</gpu:reallocate>
           <gpu:RNG>false</gpu:RNG>
         </gpu:function>
+        <!-- Sperm_SampleEvConcentration -->
+        <gpu:function>
+          <name>Sperm_SampleEvConcentration</name>
+          <description></description>
+          <currentState>initial_state</currentState>
+          <nextState>initial_state</nextState>
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>true</gpu:RNG>
+        </gpu:function>
       </functions>
       <states>
-		<gpu:state>
+		    <gpu:state>
           <name>pre_initial_state</name>
         </gpu:state>
         <gpu:state>
@@ -668,6 +777,7 @@
         </gpu:variable>
       </memory>
       <functions>
+      <!-- Oocyte_ReportPosition -->
         <gpu:function>
           <name>Oocyte_ReportPosition</name>
           <description>reports the current position to all sperm</description>
@@ -735,6 +845,11 @@
       </gpu:layerFunction>
       <gpu:layerFunction>
         <name>Oocyte_ReportPosition</name>
+      </gpu:layerFunction>
+    </layer>
+    <layer>
+      <gpu:layerFunction>
+        <name>Sperm_SampleEvConcentration</name>
       </gpu:layerFunction>
     </layer>
     <layer>
