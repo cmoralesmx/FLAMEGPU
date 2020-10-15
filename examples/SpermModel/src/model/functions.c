@@ -34,7 +34,8 @@ struct CollisionDetails {
 	bool collisionOccurred;
 };
 
-/*Copies model / collision detection data stored in environment_definition.bin into GPU memory*/
+/* Copies model and collision detection data stored in 
+	environment_definition.bin into GPU memory */
 __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 
 	char data[470];
@@ -63,9 +64,33 @@ __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 	printf("Base progresive velocity %f\n", baseProgVel);
 	set_Const_BaseProgressiveVelocity(&baseProgVel);
 
-	float maxExoConc = max(*get_Const_IsthExoConcMean(), *get_Const_AmpExoConcMean());
-	printf("Max exosome concentration %f\n", maxExoConc);
-	set_Const_MaxExoConc(&maxExoConc);
+	printf("Microvesicles effect on lifespan ");
+	if(*get_Const_LifespanAffectedByMicroVesicles() > 0){
+		printf("ENABLED at %d%%\n", (int)(*get_Const_PercVelocityDueToExosomes() * 100.0f));
+	} else {
+		printf("DISABLED\n");
+	}
+	
+	printf("Exosomes effect on lifespan ");
+	if(*get_Const_LifespanAffectedByExosomes() > 0){
+		printf("ENABLED at %d%%\n", (int)(*get_Const_PercVelocityDueToExosomes() * 100.0f));
+	} else {
+		printf("DISABLED\n");
+	}
+	
+	printf("Exosomes effect on progressive movement ");
+	if(*get_Const_ProgressiveMovementAffectedByExosomes() > 0){
+		printf("ENABLED\n");
+	} else {
+		printf("DISABLED\n");
+	}
+	
+	printf("Exosomes effect on detachment threshold ");
+	if(*get_Const_DetachmentAffectedByExosomes() > 0){
+		printf("ENABLED\n");
+	} else {
+		printf("DISABLED\n");
+	}
 }
 
 
@@ -73,10 +98,6 @@ __FLAME_GPU_STEP_FUNC__ void updateIterationNo() {
 	unsigned int iter = getIterationNumber();
 	set_currentIterationNo(&iter);
 }
-
-#ifdef _MSC_VER
-#pragma region Helper Functions
-#endif
 
 /*Calculates movement speed for a single step*/
 __device__ float GetSingleStepProgressiveVelocity(xmachine_memory_Sperm* sperm) {
@@ -174,14 +195,6 @@ __device__ float3 getOocytePosition(xmachine_message_oocytePosition* oocyte) {
 	return make_float3(oocyte->positionX, oocyte->positionY, oocyte->positionZ);
 }
 
-#ifdef _MSC_VER
-#pragma endregion
-#endif
-
-#ifdef _MSC_VER
-#pragma region Sperm Angular Rotation Functions
-#endif
-
 // maxAngleDeg is angle between normal and cone radius
 __device__ void ConicRotation(Matrix &spermMatrix, float maxAngleDeg, RNG_rand48* rand48) {
 
@@ -229,14 +242,6 @@ __device__ void HalfConicReflection(Matrix &spermMatrix, float3 collisionPlaneNo
 	}
 }
 
-#ifdef _MSC_VER
-#pragma endregion
-#endif
-
-#ifdef _MSC_VER
-#pragma region Common Functions
-#endif
-
 /* Attach a sperm to oocyte - bind to the closest point between the sperm and the oocyte */
 __device__ void AttachSpermToOocyte(xmachine_memory_Sperm* sperm, Matrix& spermMatrix, float3 oocytePosition, int oocyteCollisionID) {
 
@@ -253,8 +258,6 @@ __device__ void AttachSpermToOocyte(xmachine_memory_Sperm* sperm, Matrix& spermM
 	sperm->attachedToOocyteTime = currentIterationNo;
 	sperm->attachedToOocyteID = oocyteCollisionID;
 }
-
-
 
 /*Oocte position shared memory*/
 __shared__ float3 SharedOocytePosition[TOTAL_NO_OF_OOCYTES];
@@ -373,15 +376,7 @@ float movementDistance, float3 direction, CollisionDetails &collisionDetails) {
 
 }
 
-#ifdef _MSC_VER
-#pragma endregion
-#endif
-
 #define INITIAL_DISTRIBUTION_ANGLE 90
-
-#ifdef _MSC_VER
-#pragma region Sperm Functions
-#endif
 
 //Distribute Sperm on walls of current section - called at start of simulation only
 //Removed random component for consistent deployment - direction calculated based on direction from 
@@ -425,10 +420,8 @@ __FLAME_GPU_FUNC__ int Sperm_Init(xmachine_memory_Sperm* sperm, RNG_rand48* rand
 
 /*Tests if sperm should become capacitated*/
 __FLAME_GPU_FUNC__ int Sperm_Capacitate(xmachine_memory_Sperm* sperm, RNG_rand48* rand48) {
-
 	if (SpermOutOfBounds()) { return 0; }
-	
-		
+
 	bool activate = TestCondition(Const_CapacitationThreshold, rand48);
 	//Activate if random number is less than ACTIVATION_THRESHOLD
 
@@ -459,10 +452,6 @@ __device__ bool HandleSurfaceInteraction(xmachine_memory_Sperm* sperm, Matrix& s
 	return resolved;
 }
 
-#ifdef _MSC_VER
-#pragma region Progressive Movement
-#endif
-
 /*Moves forward a single iteration*/
 __device__ bool SingleProgressiveMovement(xmachine_memory_Sperm* sperm, 
 	Matrix& spermMatrix, RNG_rand48* rand48, float distanceToMove) {
@@ -491,8 +480,7 @@ __device__ bool SingleProgressiveMovement(xmachine_memory_Sperm* sperm,
 /* Moves forward at small steps, progressively performing collision detection
 	EV effect: singleStepDistance is affected by the presence of EVs, higher 
 	concentrations provide an stimulous to the progressive movement.
-	1) Read EV concentration at current location
-	2) Affect the singleStepDistance in the corresponding amount
+	
 */
 __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm, 
 	xmachine_message_oocytePosition_list* oocytePositionList, RNG_rand48* rand48) {
@@ -504,25 +492,17 @@ __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm,
 	Matrix spermMatrix = getTransformationMatrix(sperm);
 	float singleStepDistance;
 	bool resolved;
-	float exosomeFactor;
-
-	float mean; float sd;
-	if(sperm->oviductSegment < Const_IsthLastSlice){
-		mean = Const_IsthExoConcMean;
-		sd = Const_IsthExoConcSDev;
+    if(Const_ProgressiveMovementAffectedByExosomes > 0){
+		if(sperm->exoConcentration > 0.75) // high concentration, extends the movement
+			singleStepDistance = (Const_BaseProgressiveVelocity + 1.5 * Const_PercVelocityDueToExosomes) / ((float)Const_ProgressiveMovementSteps);
+		else if (sperm->exoConcentration < 0.25) // low concentration, reduced movement
+			singleStepDistance = Const_BaseProgressiveVelocity / ((float)Const_ProgressiveMovementSteps);
+		else // less extension on the movement
+			singleStepDistance = (Const_BaseProgressiveVelocity + 0.5 * Const_PercVelocityDueToExosomes) / ((float)Const_ProgressiveMovementSteps);
 	} else {
-		mean = Const_AmpExoConcMean;
-		sd = Const_AmpExoConcSDev;
-	}
-	
-	exosomeFactor = sd + mean * sqrtf(-2.0 * log(rnd<CONTINUOUS>(rand48))); // rnd<CONTINUOUS>(rand48);
-	if(exosomeFactor > (mean + sd + sd)){
-		exosomeFactor = exosomeFactor / Const_MaxExoConc;
+		singleStepDistance = Const_ProgressiveVelocity / ((float)Const_ProgressiveMovementSteps);
 	}
 
-	singleStepDistance = (Const_BaseProgressiveVelocity 
-		+ exosomeFactor * Const_PercVelocityDueToExosomes
-		)/ ((float)Const_ProgressiveMovementSteps);
 	for(int i=0; i < Const_ProgressiveMovementSteps; i++) {
 		resolved = SingleProgressiveMovement(sperm, spermMatrix, rand48, singleStepDistance);
 
@@ -535,13 +515,38 @@ __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm,
 	return 0;
 }
 
-#ifdef _MSC_VER
-#pragma endregion
-#endif
+__FLAME_GPU_FUNC__ int Sperm_SampleEvConcentration(xmachine_memory_Sperm* sperm, RNG_rand48* rand48){
+	float exo_rn, mvs_rn;
+	float exo_max_conc, mvs_max_conc;
+	float exo_mean, exo_sd, mvs_mean, mvs_sd;
+	if(sperm->oviductSegment < Const_IsthLastSlice){
+		exo_max_conc = Const_IsthMaxExoConc;
+		mvs_max_conc = Const_IsthMaxMvsConc;
 
-#ifdef _MSC_VER
-#pragma region Non Progressive Movement
-#endif
+		exo_mean = Const_IsthExoConcMean;
+		exo_sd = Const_IsthExoConcSDev;
+		mvs_mean = Const_IsthMvsConcMean;
+		mvs_sd = Const_IsthMvsConcSDev;
+	} else {
+		exo_max_conc = Const_AmpMaxExoConc;
+		mvs_max_conc = Const_AmpMaxMvsConc;
+
+		exo_mean = Const_AmpExoConcMean;
+		exo_sd = Const_AmpExoConcSDev;
+		mvs_mean = Const_AmpMvsConcMean;
+		mvs_sd = Const_AmpMvsConcSDev;
+	}
+	
+	// sperm->exoConcentration = rnd<CONTINUOUS>(rand48);
+	exo_rn = exo_sd + exo_mean * sqrtf(-2.0 * log(rnd<CONTINUOUS>(rand48)));
+	mvs_rn = mvs_sd + mvs_mean * sqrtf(-2.0 * log(rnd<CONTINUOUS>(rand48)));
+
+	sperm->exoConcentration = exo_rn > exo_max_conc ? exo_max_conc : exo_rn;
+	sperm->mvsConcentration = mvs_rn > mvs_max_conc ? mvs_max_conc : mvs_rn;
+	
+	return 0;
+}
+
 /*MOves non-progressively */
 __device__ bool SingleNonProgressiveMovement(xmachine_memory_Sperm* sperm, Matrix& spermMatrix, RNG_rand48* rand48, float distanceToMove) {
 
@@ -583,20 +588,37 @@ __FLAME_GPU_FUNC__ int Sperm_NonProgressiveMovement(xmachine_memory_Sperm* sperm
 
 }
 
-#ifdef _MSC_VER
-#pragma endregion
-#endif
-
-/*Determins if an agent should detach from the oviduct*/
+/*
+	Determins if an agent should detach from the oviduct
+	EV effect: The detachment threshold reacts to the EV concentration
+	- High exosome concentration, the threshold is reduced (higher chance of detaching)
+	- Low exosome concentration,  the threshold does not change
+	- No exosome concentration, the threshold is increased (lower chance of detaching)
+*/
 __FLAME_GPU_FUNC__ int Sperm_DetachFromEpithelium(xmachine_memory_Sperm* sperm, RNG_rand48* rand48) {
 	if (SpermOutOfBounds()) { return 0; }
 
-	float switchThreshold = HasState(sperm, MOVEMENT_STATE_NON_PROGRESSIVE) ? Const_DetachmentThresholdNonProgressive : Const_DetachmentThresholdProgressive;
+	if (Const_DetachmentAffectedByExosomes > 0){
+		float switchThreshold = HasState(sperm, MOVEMENT_STATE_NON_PROGRESSIVE) ? 
+			Const_DetachmentThresholdNonProgressive : Const_DetachmentThresholdProgressive;
 
+		if(sperm->exoConcentration > 0.75)
+			switchThreshold *= 0.75;
+		else if (sperm->exoConcentration < 0.25)
+			switchThreshold *= 1.5;
+		
+		if (TestCondition(switchThreshold, rand48)) {
+			SetCollisionState(sperm, COLLISION_STATE_TOUCHING_EPITHELIUM);
+		}
+	} else {
 
-	if (TestCondition(switchThreshold, rand48)) {
-		SetCollisionState(sperm, COLLISION_STATE_TOUCHING_EPITHELIUM);
+		if (TestCondition(HasState(sperm, MOVEMENT_STATE_NON_PROGRESSIVE) ? 
+			Const_DetachmentThresholdNonProgressive : Const_DetachmentThresholdProgressive, rand48)) {
+			SetCollisionState(sperm, COLLISION_STATE_TOUCHING_EPITHELIUM);
+		}
 	}
+
+	
 
 	return 0;
 }
@@ -625,25 +647,101 @@ __FLAME_GPU_FUNC__ int Sperm_SwitchMovementState(xmachine_memory_Sperm* sperm, R
 	return 0;
 }
 
-/*Regulate sperm live*/
+/* 
+	Regulate sperm live
+	EV effect: The decrement to apply will depend on the MVs concentration found.
+	- High concentration (>0.75), the decreasing factor will halve (double the lifespan).
+	- Low concentration (<0.25), the decreasing factor will be one
+	- No concentration, the decreasing factor will double (half the lifespan).
+*/
 __FLAME_GPU_FUNC__ int Sperm_RegulateState(xmachine_memory_Sperm* sperm) {
 	if (SpermOutOfBounds()) { return 0; }
 
+	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED) && Const_LifespanAffectedByMicroVesicles > 0) {
+		if(sperm->pendingReduction > 0){
+			// high concentration was found in previous step
+			// lifespan was not reduced, must be reduced now
+			sperm->pendingReduction = 0;
+			sperm->remainingLifeTime -= 1;
+		} else {
+			if(sperm->mvsConcentration < 0.25) {
+				// low concentration, double reduction in lifespan
+				sperm->remainingLifeTime -= 2;
+			} else if(sperm->mvsConcentration > 0.75) {
+				// high concentration, half reduction in lifespan
+				// there is no reduction in current step, should be done in next
+				sperm->pendingReduction = 1;
+			} else {
+				// avg concentration, standard reduction in lifespan
+				sperm->remainingLifeTime -= 1;
+			}
+		}
+
+		if (sperm->remainingLifeTime <= 0) {
+			SetActivationState(sperm, ACTIVATION_STATE_DEAD);
+		}
+	}
+	return 0;
+}
+__FLAME_GPU_FUNC__ int Sperm_RegulateState_MicroVesicles(xmachine_memory_Sperm* sperm) {
+	if (SpermOutOfBounds()) { return 0; }
+
 	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED)) {
-		if (--sperm->remainingLifeTime <= 0) {
+		if(sperm->pendingReduction > 0){
+			// high concentration was found in previous step
+			// lifespan was not reduced, must be reduced now
+			sperm->pendingReduction = 0;
+			sperm->remainingLifeTime -= 1;
+		} else {
+			if(sperm->mvsConcentration < 0.25) {
+				// low concentration, double reduction in lifespan
+				sperm->remainingLifeTime -= 2;
+			} else if(sperm->mvsConcentration > 0.75) {
+				// high concentration, half reduction in lifespan
+				// there is no reduction in current step, should be done in next
+				sperm->pendingReduction = 1;
+			} else {
+				// avg concentration, standard reduction in lifespan
+				sperm->remainingLifeTime -= 1;
+			}
+		}
+
+		if (sperm->remainingLifeTime <= 0) {
+			SetActivationState(sperm, ACTIVATION_STATE_DEAD);
+		}
+	}
+	return 0;
+}
+__FLAME_GPU_FUNC__ int Sperm_RegulateState_Exosomes(xmachine_memory_Sperm* sperm) {
+	if (SpermOutOfBounds()) { return 0; }
+
+	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED)) {
+		if(sperm->pendingReduction > 0){
+			// high concentration was found in previous step
+			// lifespan was not reduced, must be reduced now
+			sperm->pendingReduction = 0;
+			sperm->remainingLifeTime -= 1;
+		} else {
+			if(sperm->exoConcentration < 0.25) {
+				// low concentration, double reduction in lifespan
+				sperm->remainingLifeTime -= 2;
+			} else if(sperm->exoConcentration > 0.75) {
+				// high concentration, half reduction in lifespan
+				// there is no reduction in current step, should be done in next
+				sperm->pendingReduction = 1;
+			} else {
+				// avg concentration, standard reduction in lifespan
+				sperm->remainingLifeTime -= 1;
+			}
+		}
+
+		if (sperm->remainingLifeTime <= 0) {
 			SetActivationState(sperm, ACTIVATION_STATE_DEAD);
 		}
 	}
 	return 0;
 }
 
-#ifdef _MSC_VER
-#pragma endregion
-#endif
-
-#ifdef _MSC_VER
-#pragma region Oocyte Functions
-#endif
 /*Reports the position of the oocyte*/
 __FLAME_GPU_FUNC__ int Oocyte_ReportPosition(xmachine_memory_Oocyte* oocyte, xmachine_message_oocytePosition_list* oocytePosition_messages){
 	if (OocyteOutOfBounds()) { return 0; }
@@ -651,11 +749,5 @@ __FLAME_GPU_FUNC__ int Oocyte_ReportPosition(xmachine_memory_Oocyte* oocyte, xma
 	add_oocytePosition_message(oocytePosition_messages, oocyte->id, oocyte->positionX, oocyte->positionY, oocyte->positionZ, oocyte->uniqueEnvironmentNo);
 	return 0;
 }
-
-#ifdef _MSC_VER
-#pragma endregion
-#endif
-  
-
 
 #endif //_FLAMEGPU_FUNCTIONS
