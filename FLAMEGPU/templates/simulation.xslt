@@ -671,7 +671,9 @@ void initialise(char * inputfile){
 	gpuErrchk( cudaMalloc( (void**) &amp;d_rand48, h_rand48_SoA_size));
 	// calculate strided iteration constants
 	static const unsigned long long a = 0x5DEECE66DLL, c = 0xB;
-	int seed = 123;
+	//int seed = 123;
+	srand (time(NULL));
+	int seed = rand();
 	unsigned long long A, C;
 	A = 1LL; C = 0LL;
 	for (unsigned int i = 0; i &lt; buffer_size_MAX; ++i) {
