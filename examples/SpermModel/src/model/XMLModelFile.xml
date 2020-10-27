@@ -237,6 +237,7 @@
       <gpu:variable>
         <type>float</type>
         <name>Const_BaseProgressiveVelocity</name>
+        <defaultValue>0</defaultValue>
       </gpu:variable>
 
       <!-- Maximum concentration values

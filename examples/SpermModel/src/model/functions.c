@@ -19,6 +19,7 @@
 #define _FLAMEGPU_FUNCTIONS
 
 #include <header.h>
+#include <math.h>
 #include "Common/helper_math.h"
 #include "OviductCollisionDetectionV1/collision_detectionCUDA.h"
 #include "Common/common.h"
@@ -56,15 +57,14 @@ __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 	const char* simDesc = "Simulation using ev-extended model with pig_oviduct a";
 	setSimulationDescription(simDesc);
 
-	//Perform the pre-initialisation step - distribute the sperm on the walls
-	singleIteration();
+	printf("Exosomes effect on detachmnt ");
+	if(*get_Const_DetachmentAffectedByExosomes() > 0){
+		printf("ENABLED\n");
+	} else {
+		printf("DISABLED\n");
+	}
 
-	float baseProgVel = (*get_Const_ProgressiveVelocity() 
-		- *get_Const_ProgressiveVelocity() * *get_Const_PercVelocityDueToExosomes());
-	printf("Base progresive velocity %f\n", baseProgVel);
-	set_Const_BaseProgressiveVelocity(&baseProgVel);
-
-	printf("Microvesicles effect on lifespan ");
+	printf("Microves effect on lifespan ");
 	if(*get_Const_LifespanAffectedByMicroVesicles() > 0){
 		printf("ENABLED at %d%%\n", (int)(*get_Const_PercVelocityDueToExosomes() * 100.0f));
 	} else {
@@ -78,19 +78,22 @@ __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 		printf("DISABLED\n");
 	}
 	
-	printf("Exosomes effect on progressive movement ");
+	printf("Exosomes effect on prog mov ");
 	if(*get_Const_ProgressiveMovementAffectedByExosomes() > 0){
 		printf("ENABLED\n");
+
+		float baseProgVel = (*get_Const_ProgressiveVelocity() 
+			- *get_Const_ProgressiveVelocity() * *get_Const_PercVelocityDueToExosomes());
+		printf("Base progresive velocity %f\n", baseProgVel);
+		set_Const_BaseProgressiveVelocity(&baseProgVel);
 	} else {
 		printf("DISABLED\n");
 	}
 	
-	printf("Exosomes effect on detachment threshold ");
-	if(*get_Const_DetachmentAffectedByExosomes() > 0){
-		printf("ENABLED\n");
-	} else {
-		printf("DISABLED\n");
-	}
+	
+
+	//Perform the pre-initialisation step - distribute the sperm on the walls
+	singleIteration();
 }
 
 
@@ -538,8 +541,11 @@ __FLAME_GPU_FUNC__ int Sperm_SampleEvConcentration(xmachine_memory_Sperm* sperm,
 	}
 	
 	// sperm->exoConcentration = rnd<CONTINUOUS>(rand48);
-	exo_rn = exo_sd + exo_mean * sqrtf(-2.0 * log(rnd<CONTINUOUS>(rand48)));
-	mvs_rn = mvs_sd + mvs_mean * sqrtf(-2.0 * log(rnd<CONTINUOUS>(rand48)));
+	float r = sqrtf(-2.0 * log(rnd<CONTINUOUS>(rand48)));
+	float a = 2 * rnd<CONTINUOUS>(rand48);
+
+	exo_rn = exo_mean +( exo_sd * r * cospif(a));
+	mvs_rn = mvs_mean +( mvs_sd * r * sinpif(a));
 
 	sperm->exoConcentration = exo_rn > exo_max_conc ? exo_max_conc : exo_rn;
 	sperm->mvsConcentration = mvs_rn > mvs_max_conc ? mvs_max_conc : mvs_rn;
