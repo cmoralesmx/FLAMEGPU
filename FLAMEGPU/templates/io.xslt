@@ -1584,7 +1584,7 @@ void saveIterationDataToFlameBinary(int iteration_number, <xsl:for-each select="
     int noOfAgents = 0;
     fwrite(&amp;noOfAgents, sizeof(int), 1, file);
     
-    printf("  Placeholders, chunkOffsetPosition: %#lx (%ld), chunkSize: %d, noOfAgents: %d \n", chunkOffsetPosition, chunkOffsetPosition, chunkSize, noOfAgents);
+//    printf("  Placeholders, chunkOffsetPosition: %#lx (%ld), chunkSize: %d, noOfAgents: %d \n", chunkOffsetPosition, chunkOffsetPosition, chunkSize, noOfAgents);
 
     int currentAgentTypeID = 0;
 
@@ -1607,13 +1607,13 @@ void saveIterationDataToFlameBinary(int iteration_number, <xsl:for-each select="
     fwrite(&amp;chunkSize, sizeof(int), 1, file);
     fwrite(&amp;noOfAgents, sizeof(int), 1, file);
 
-    printf("    Actual data, chunkOffsetPosition: %#lx (%ld), chunkSize: %d, noOfAgents: %d\n", chunkOffsetPosition, chunkOffsetPosition, chunkSize, noOfAgents);
+//    printf("    Actual data, chunkOffsetPosition: %#lx (%ld), chunkSize: %d, noOfAgents: %d\n", chunkOffsetPosition, chunkOffsetPosition, chunkSize, noOfAgents);
 
     int_64 tmpOffsetLoc = iterationOffsetLocation + (sizeof(int_64) * iteration_number);
     fseek64(file, tmpOffsetLoc, SEEK_SET);
     fwrite(&amp;chunkOffsetPosition, sizeof(int_64), 1, file);
 
-    printf("    offset table, location: %#lx (%ld), value: %ld\n", tmpOffsetLoc, tmpOffsetLoc, chunkOffsetPosition);
+//    printf("    offset table, location: %#lx (%ld), value: %ld\n", tmpOffsetLoc, tmpOffsetLoc, chunkOffsetPosition);
 
     fseek64(file, 0, SEEK_END);
 }
