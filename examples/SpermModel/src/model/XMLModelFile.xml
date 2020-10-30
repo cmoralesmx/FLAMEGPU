@@ -562,6 +562,11 @@
           <description>Set initial states</description>
           <currentState>pre_initial_state</currentState>
           <nextState>final_state</nextState>
+          <inputs>
+            <gpu:input>
+              <messageName>oocytePosition</messageName>
+            </gpu:input>
+          </inputs>
           <gpu:reallocate>false</gpu:reallocate>
           <gpu:RNG>true</gpu:RNG>
         </gpu:function>

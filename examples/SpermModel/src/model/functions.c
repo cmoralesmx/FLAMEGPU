@@ -291,7 +291,11 @@ __device__ void AttachToEpithelium(xmachine_memory_Sperm* sperm) {
 	SetCollisionState(sperm, COLLISION_STATE_ATTACHED_TO_EPITHELIUM);
 }
 
-/*Resolves agent to oviduct collisions*/
+/*
+The first part resolves agent to oviduct collisions while the second part 
+detects agent to oocyte collisions. The oocyte collision detection depends on
+having a cache of oocyte posisions.
+*/
 __device__ bool ResolveCollisions(xmachine_memory_Sperm* sperm, Matrix& spermMatrix, 
 float movementDistance, float3 direction, CollisionDetails &collisionDetails) {
 
@@ -384,7 +388,7 @@ float movementDistance, float3 direction, CollisionDetails &collisionDetails) {
 //Distribute Sperm on walls of current section - called at start of simulation only
 //Removed random component for consistent deployment - direction calculated based on direction from 
 //line between prev and next segment midpoints.
-__FLAME_GPU_FUNC__ int Sperm_Init(xmachine_memory_Sperm* sperm, RNG_rand48* rand48) {
+__FLAME_GPU_FUNC__ int Sperm_Init(xmachine_memory_Sperm* sperm, xmachine_message_oocytePosition_list* oocytePositionList, RNG_rand48* rand48) {
 
 	if (SpermOutOfBounds()) { return 0; }
 
@@ -405,6 +409,8 @@ __FLAME_GPU_FUNC__ int Sperm_Init(xmachine_memory_Sperm* sperm, RNG_rand48* rand
 
 	CollisionDetails collisionDetails;
 
+	// Prepare the cache of Oocyte positions, needed for the next step
+	GenerateOocytePositionCache(oocytePositionList);
 	/* Identify Collisions */
 	ResolveCollisions(sperm, spermMatrix, 300, direction, collisionDetails);
 
