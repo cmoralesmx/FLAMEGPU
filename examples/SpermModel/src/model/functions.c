@@ -502,12 +502,7 @@ __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm,
 	float singleStepDistance;
 	bool resolved;
     if(Const_ProgressiveMovementAffectedByExosomes > 0){
-		if(sperm->exoConcentration > 0.75) // high concentration, extends the movement
-			singleStepDistance = (Const_BaseProgressiveVelocity + 1.5 * Const_PercVelocityDueToExosomes) / ((float)Const_ProgressiveMovementSteps);
-		else if (sperm->exoConcentration < 0.25) // low concentration, reduced movement
-			singleStepDistance = Const_BaseProgressiveVelocity / ((float)Const_ProgressiveMovementSteps);
-		else // less extension on the movement
-			singleStepDistance = (Const_BaseProgressiveVelocity + 0.5 * Const_PercVelocityDueToExosomes) / ((float)Const_ProgressiveMovementSteps);
+			singleStepDistance += (1.5 * Const_PercentVelocityDueToExosomes);
 	} else {
 		singleStepDistance = Const_ProgressiveVelocity / ((float)Const_ProgressiveMovementSteps);
 	}
