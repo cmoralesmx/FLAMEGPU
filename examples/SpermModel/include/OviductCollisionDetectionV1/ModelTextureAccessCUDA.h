@@ -97,7 +97,7 @@ void initialiseGPUDataFromFile(char* filename) {
 	TransferAndBindToTexture((void*)&SLICE_PLANE_D, SLICE_PLANE_H, SLICE_PLANE_TEX, sizeof(float4) * NO_OF_SLICES);
 
 
-	printf("Finished Loading Environment Data\n");
+	printf("Done loading environment data\n");
 }
 
 /*
@@ -108,7 +108,7 @@ void initialiseGPUData() {
 	char data[500];
 
 	sprintf(data, "%senvironment_definition.bin", INCLUDE_DATA_FILE);
-	printf("Will call initialiseGPUDataFromFile(data) with data=\"%s\"\n", data);
+	printf("Loading environment definition from \"%s\"\n", data);
 	initialiseGPUDataFromFile(data);
 }
 

@@ -216,12 +216,12 @@
         <type>int</type>
         <name>Const_ProgressiveMovementAffectedByExosomes</name>
         <description>Flag to enable the effect of MVs in sperm lifespan</description>
-        <defaultValue>1</defaultValue>
+        <defaultValue>0</defaultValue>
       </gpu:variable>
-      <!-- Const_PercVelocityDueToExosomes -->
+      <!-- Const_PercentVelocityDueToExosomes -->
       <gpu:variable>
         <type>float</type>
-        <name>Const_PercVelocityDueToExosomes</name>
+        <name>Const_PercentVelocityDueToExosomes</name>
         <description>Percentage of progresive velocity attributed to Exosomes</description>
         <defaultValue>0.6</defaultValue>
       </gpu:variable>
@@ -416,6 +416,9 @@
     <gpu:initFunctions>
       <gpu:initFunction>
         <gpu:name>copyModelData</gpu:name>
+      </gpu:initFunction>
+      <gpu:initFunction>
+        <gpu:name>preInitialisation</gpu:name>
       </gpu:initFunction>
     </gpu:initFunctions>
 

@@ -44,7 +44,7 @@ __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 	int pathLength = getDataPath(data);
 
 	if (pathLength == 0) {
-		printf("WARNING: pathLength is 0\n");
+		printf("INFO: pathLength is 0\n");
 		initialiseGPUData();
 	}
 	else {
@@ -56,42 +56,52 @@ __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 	}
 	const char* simDesc = "Simulation using ev-extended model with pig_oviduct a";
 	setSimulationDescription(simDesc);
+}
 
-	printf("Exosomes effect on detachmnt ");
-	if(*get_Const_DetachmentAffectedByExosomes() > 0){
-		printf("ENABLED\n");
-	} else {
-		printf("DISABLED\n");
+__FLAME_GPU_INIT_FUNC__ void preInitialisation(){
+	printf("Extracellular Vesicles, setup from initial state file as follows,\n");
+	// For how long is the sampling valid or how quickly should the concentration change?
+
+	float v = *get_Const_DetachmentAffectedByExosomes() > 0;
+	printf("[%s] EX - Spermatozoa detachment\n", v ? "true" : "false");
+	if(v){
+		printf("The chance of detaching from the tissue will be affected by Exosome concentration by,\n");
+		printf("- INCREASING, on high concenration\n");
+		printf("- DECREASING, on low concenration\n");
 	}
 
-	printf("Microves effect on lifespan ");
-	if(*get_Const_LifespanAffectedByMicroVesicles() > 0){
-		printf("ENABLED at %d%%\n", (int)(*get_Const_PercVelocityDueToExosomes() * 100.0f));
-	} else {
-		printf("DISABLED\n");
+	float l1 = *get_Const_LifespanAffectedByMicroVesicles() > 0 ;
+	float l2 = *get_Const_LifespanAffectedByExosomes() > 0;
+	if (l1 > 0 && l2 >0){
+		printf("WARNING: The lifespan should only be affected by exosomes or microvesicles\n")
 	}
-	
-	printf("Exosomes effect on lifespan ");
-	if(*get_Const_LifespanAffectedByExosomes() > 0){
-		printf("ENABLED at %d%%\n", (int)(*get_Const_PercVelocityDueToExosomes() * 100.0f));
-	} else {
-		printf("DISABLED\n");
+	printf("[%s] MV - Spermatozoa lifespan\n", v? "true" : "false");
+	if(v){
+		printf("The spermatozoa have the same expected lifespan at start.\n");
+		printf("It will decrease by 1 second per iteration except if the MICRO VESICLES concentration...\n");
+		printf("- is high, then it will be reduced by 0.5 seconds\n");
+		printf("- is low, then it will be reduced by 2 seconds\n");
 	}
-	
-	printf("Exosomes effect on prog mov ");
-	if(*get_Const_ProgressiveMovementAffectedByExosomes() > 0){
-		printf("ENABLED\n");
+	printf("[%s] EX - Spermatozoa lifespan\n", v ? "true" : "false");
+	if(v){
+		printf("The spermatozoa have the same expected lifespan at start.\n");
+		printf("It will decrease by 1 second per iteration except if the EXOSOME concentration...\n");
+		printf("- is high, then it will be reduced by 0.5 seconds\n");
+		printf("- is low, then it will be reduced by  2 seconds\n");
+	}
 
-		float baseProgVel = (*get_Const_ProgressiveVelocity() 
-			- *get_Const_ProgressiveVelocity() * *get_Const_PercVelocityDueToExosomes());
-		printf("Base progresive velocity %f\n", baseProgVel);
-		set_Const_BaseProgressiveVelocity(&baseProgVel);
-	} else {
-		printf("DISABLED\n");
+	v = *get_Const_ProgressiveMovementAffectedByExosomes() > 0;
+	printf("[%s] EX - Spermatozoa progressive motility.", v ? "true" : "false");
+	if(v){
+		printf(" Accounts for %d%% of the movement possible per time step\n", (int)(100 * *get_Const_PercentVelocityDueToExosomes()));
+		float progMot_total = *get_Const_ProgressiveVelocity();
+		float progMot_EX = *get_Const_ProgressiveVelocity() * *get_Const_PercentVelocityDueToExosomes();
+		float progMot_base = progMot_total - progMot_EX;
+		printf("\t\t~ Progressive velocity composition [base: %.2f, due to exosomes: %.2f, total: %.2f] um/s\n", progMot_base, progMot_EX, progMot_total);
+		set_Const_BaseProgressiveVelocity(&progMot_base);
 	}
+	printf("\n");
 	
-	
-
 	//Perform the pre-initialisation step - distribute the sperm on the walls
 	singleIteration();
 }
@@ -502,7 +512,13 @@ __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm,
 	float singleStepDistance;
 	bool resolved;
     if(Const_ProgressiveMovementAffectedByExosomes > 0){
+		singleStepDistance = Const_BaseProgressiveVelocity;
+		if (sperm->exoConcentration < 0.25)  {}// low concentration, no movement gain
+		else if(sperm->exoConcentration > 0.75) // high concentration, extra movement gain
 			singleStepDistance += (1.5 * Const_PercentVelocityDueToExosomes);
+		else // mid concentration, some movement restored
+			singleStepDistance += (0.5 * Const_PercentVelocityDueToExosomes);
+		singleStepDistance /= (float)Const_ProgressiveMovementSteps;
 	} else {
 		singleStepDistance = Const_ProgressiveVelocity / ((float)Const_ProgressiveMovementSteps);
 	}
