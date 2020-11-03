@@ -766,6 +766,59 @@
         </gpu:function>
         <!-- Sperm_DetachFromEpithelium (affected by EV exo) -->
         <gpu:function>
+          <name>Sperm_DetachFromEpithelium_EV</name>
+          <description>Sperm tries to detach from epithelium</description>
+          <currentState>initial_state</currentState>
+          <nextState>post_movement_state</nextState>
+          <condition>
+            <lhs>
+              <condition>
+                <lhs>
+                  <condition>
+                    <lhs><value>Const_DetachmentAffectedByExosomes</value></lhs>
+                    <operator>&gt;</operator>
+                    <rhs><value>0</value></rhs>
+                  </condition>
+                </lhs>
+                <operator>||</operator>
+                <rhs>
+                  <condition>
+                    <lhs><value>Const_DetachmentAffectedByMicrovesicles</value></lhs>
+                    <operator>&gt;</operator>
+                    <rhs><value>0</value></rhs>
+                  </condition>
+                </rhs>
+              </condition>
+            </lhs>
+            <operator>&amp;&amp;</operator>
+            <rhs>
+              <!-- nested original condition start -->
+              <condition>
+                <lhs>
+                  <condition>
+                    <lhs>
+                      <agentVariable>activationState</agentVariable>
+                    </lhs>
+                    <operator> &amp; </operator>
+                    <rhs>
+                      <value>(COLLISION_STATE_ATTACHED_TO_EPITHELIUM | ACTIVATION_STATE_CAPACITATED)</value>
+                    </rhs>
+                  </condition>
+                </lhs>
+                <operator> == </operator>
+                <rhs>
+                  <value>(COLLISION_STATE_ATTACHED_TO_EPITHELIUM | ACTIVATION_STATE_CAPACITATED)</value>
+                </rhs>
+              </condition>
+            <!-- nested original condition end -->
+            </rhs>
+          </condition>
+
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>true</gpu:RNG>
+        </gpu:function>
+
+        <gpu:function>
           <name>Sperm_DetachFromEpithelium</name>
           <description>Sperm tries to detach from epithelium</description>
           <currentState>initial_state</currentState>
@@ -774,17 +827,43 @@
             <lhs>
               <condition>
                 <lhs>
-                  <agentVariable>activationState</agentVariable>
+                  <condition>
+                    <lhs><value>Const_DetachmentAffectedByExosomes</value></lhs>
+                    <operator>&lt;</operator>
+                    <rhs><value>1</value></rhs>
+                  </condition>
                 </lhs>
-                <operator> &amp; </operator>
+                <operator>&amp;&amp;</operator>
                 <rhs>
-                  <value>(COLLISION_STATE_ATTACHED_TO_EPITHELIUM | ACTIVATION_STATE_CAPACITATED)</value>
+                  <condition>
+                    <lhs><value>Const_DetachmentAffectedByMicrovesicles</value></lhs>
+                    <operator>&lt;</operator>
+                    <rhs><value>1</value></rhs>
+                  </condition>
                 </rhs>
               </condition>
             </lhs>
-            <operator> == </operator>
+            <operator>&amp;&amp;</operator>
             <rhs>
-              <value>(COLLISION_STATE_ATTACHED_TO_EPITHELIUM | ACTIVATION_STATE_CAPACITATED)</value>
+              <!-- nested original condition start -->
+              <condition>
+                <lhs>
+                  <condition>
+                    <lhs>
+                      <agentVariable>activationState</agentVariable>
+                    </lhs>
+                    <operator> &amp; </operator>
+                    <rhs>
+                      <value>(COLLISION_STATE_ATTACHED_TO_EPITHELIUM | ACTIVATION_STATE_CAPACITATED)</value>
+                    </rhs>
+                  </condition>
+                </lhs>
+                <operator> == </operator>
+                <rhs>
+                  <value>(COLLISION_STATE_ATTACHED_TO_EPITHELIUM | ACTIVATION_STATE_CAPACITATED)</value>
+                </rhs>
+              </condition >
+              <!-- nested original condition end -->
             </rhs>
           </condition>
 
@@ -975,6 +1054,9 @@
       </gpu:layerFunction>
       <gpu:layerFunction>
         <name>Sperm_DetachFromEpithelium</name>
+      </gpu:layerFunction>
+      <gpu:layerFunction>
+        <name>Sperm_DetachFromEpithelium_EV</name>
       </gpu:layerFunction>
     </layer>
     <layer>

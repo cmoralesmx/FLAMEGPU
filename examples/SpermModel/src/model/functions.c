@@ -508,12 +508,12 @@ __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement_EV(xmachine_memory_Sperm* sperm
 	if (SpermOutOfBounds()) { return 0; }
 
 	Matrix spermMatrix = getTransformationMatrix(sperm);
-	float singleStepDistance, evConcentration;
+	float singleStepDistance;
 	bool resolved;
 
 	singleStepDistance = Const_BaseProgressiveVelocity;
 
-	evConcentration = Const_ProgressiveMovementAffectedByExosomes > 0 ? 
+	float evConcentration = Const_ProgressiveMovementAffectedByExosomes > 0 ? 
 		sperm->exoConcentration : sperm->mvsConcentration;
 
 	if (evConcentration < 0.25)  {}// low concentration, no movement gain
@@ -640,30 +640,33 @@ __FLAME_GPU_FUNC__ int Sperm_NonProgressiveMovement(xmachine_memory_Sperm* sperm
 	- Low exosome concentration,  the threshold does not change
 	- No exosome concentration, the threshold is increased (lower chance of detaching)
 */
+__FLAME_GPU_FUNC__ int Sperm_DetachFromEpithelium_EV(xmachine_memory_Sperm* sperm, RNG_rand48* rand48) {
+	if (SpermOutOfBounds()) { return 0; }
+
+	float switchThreshold = HasState(sperm, MOVEMENT_STATE_NON_PROGRESSIVE) ? 
+		Const_DetachmentThresholdNonProgressive : Const_DetachmentThresholdProgressive;
+
+	float evConcentration = Const_DetachmentAffectedByExosomes > 0?
+		sperm->exoConcentration : sperm->mvsConcentration;
+	if(evConcentration > 0.75)
+		switchThreshold *= (1 - Const_DetachmentEvEffectPercent);
+	else if (evConcentration < 0.25)
+		switchThreshold *= (1 + Const_DetachmentEvEffectPercent);
+	
+	if (TestCondition(switchThreshold, rand48)) {
+		SetCollisionState(sperm, COLLISION_STATE_TOUCHING_EPITHELIUM);
+	}
+
+	return 0;
+}
+
 __FLAME_GPU_FUNC__ int Sperm_DetachFromEpithelium(xmachine_memory_Sperm* sperm, RNG_rand48* rand48) {
 	if (SpermOutOfBounds()) { return 0; }
 
-	if (Const_DetachmentAffectedByExosomes > 0){
-		float switchThreshold = HasState(sperm, MOVEMENT_STATE_NON_PROGRESSIVE) ? 
-			Const_DetachmentThresholdNonProgressive : Const_DetachmentThresholdProgressive;
-
-		if(sperm->exoConcentration > 0.75)
-			switchThreshold *= 0.75;
-		else if (sperm->exoConcentration < 0.25)
-			switchThreshold *= 1.5;
-		
-		if (TestCondition(switchThreshold, rand48)) {
-			SetCollisionState(sperm, COLLISION_STATE_TOUCHING_EPITHELIUM);
-		}
-	} else {
-
-		if (TestCondition(HasState(sperm, MOVEMENT_STATE_NON_PROGRESSIVE) ? 
-			Const_DetachmentThresholdNonProgressive : Const_DetachmentThresholdProgressive, rand48)) {
-			SetCollisionState(sperm, COLLISION_STATE_TOUCHING_EPITHELIUM);
-		}
+	if (TestCondition(HasState(sperm, MOVEMENT_STATE_NON_PROGRESSIVE) ? 
+		Const_DetachmentThresholdNonProgressive : Const_DetachmentThresholdProgressive, rand48)) {
+		SetCollisionState(sperm, COLLISION_STATE_TOUCHING_EPITHELIUM);
 	}
-
-	
 
 	return 0;
 }
