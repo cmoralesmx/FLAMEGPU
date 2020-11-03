@@ -653,6 +653,62 @@
         </gpu:function>
         <!-- Sperm_ProgressiveMovement (affected by EV) -->
 		    <gpu:function>
+          <name>Sperm_ProgressiveMovement_EV</name>
+          <description>Move sperm forward</description>
+          <currentState>initial_state</currentState>
+          <nextState>post_movement_state</nextState>
+          <inputs>
+            <gpu:input>
+              <messageName>oocytePosition</messageName>
+            </gpu:input>
+          </inputs>
+          <condition>
+            <lhs>
+              <condition>
+                <lhs>
+                  <condition>
+                    <lhs><value>Const_ProgressiveMovementAffectedByExosomes</value></lhs>
+                    <operator>&gt;</operator>
+                    <rhs><value>0</value></rhs>
+                  </condition>
+                </lhs>
+                <operator>||</operator>
+                <rhs>
+                  <condition>
+                    <lhs><value>Const_ProgressiveMovementAffectedByMicrovesicles</value></lhs>
+                    <operator>&gt;</operator>
+                    <rhs><value>0</value></rhs>
+                  </condition>
+                </rhs>
+              </condition>
+            </lhs>
+            <operator>&amp;&amp;</operator>
+            <rhs>
+              <!-- nested original condition start -->
+              <condition>
+                <lhs>
+                  <condition>
+                    <lhs>
+                      <agentVariable>activationState</agentVariable>
+                    </lhs>
+                    <operator> &amp; </operator>
+                    <rhs>
+                      <value>(COLLISION_STATE_FREE | ACTIVATION_STATE_CAPACITATED | MOVEMENT_STATE_PROGRESSIVE)</value>
+                    </rhs>
+                  </condition>
+                </lhs>
+                <operator> == </operator>
+                <rhs>
+                  <value>(COLLISION_STATE_FREE | ACTIVATION_STATE_CAPACITATED | MOVEMENT_STATE_PROGRESSIVE)</value>
+                </rhs>
+              </condition>
+              <!-- nested original condition end -->
+            </rhs>
+          </condition>
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>true</gpu:RNG>
+        </gpu:function>
+        <gpu:function>
           <name>Sperm_ProgressiveMovement</name>
           <description>Move sperm forward</description>
           <currentState>initial_state</currentState>
@@ -666,17 +722,43 @@
             <lhs>
               <condition>
                 <lhs>
-                  <agentVariable>activationState</agentVariable>
+                  <condition>
+                    <lhs><value>Const_ProgressiveMovementAffectedByExosomes</value></lhs>
+                    <operator>&lt;</operator>
+                    <rhs><value>1</value></rhs>
+                  </condition>
                 </lhs>
-                <operator> &amp; </operator>
+                <operator>&amp;&amp;</operator>
+                <rhs>
+                  <condition>
+                    <lhs><value>Const_ProgressiveMovementAffectedByMicrovesicles</value></lhs>
+                    <operator>&lt;</operator>
+                    <rhs><value>1</value></rhs>
+                  </condition>
+                </rhs>
+              </condition>
+            </lhs>
+            <operator>&amp;&amp;</operator>
+            <rhs>
+              <!-- nested original condition start -->
+              <condition>
+                <lhs>
+                  <condition>
+                    <lhs>
+                      <agentVariable>activationState</agentVariable>
+                    </lhs>
+                    <operator> &amp; </operator>
+                    <rhs>
+                      <value>(COLLISION_STATE_FREE | ACTIVATION_STATE_CAPACITATED | MOVEMENT_STATE_PROGRESSIVE)</value>
+                    </rhs>
+                  </condition>
+                </lhs>
+                <operator> == </operator>
                 <rhs>
                   <value>(COLLISION_STATE_FREE | ACTIVATION_STATE_CAPACITATED | MOVEMENT_STATE_PROGRESSIVE)</value>
                 </rhs>
               </condition>
-            </lhs>
-            <operator> == </operator>
-            <rhs>
-              <value>(COLLISION_STATE_FREE | ACTIVATION_STATE_CAPACITATED | MOVEMENT_STATE_PROGRESSIVE)</value>
+              <!-- nested original condition end -->
             </rhs>
           </condition>
           <gpu:reallocate>false</gpu:reallocate>
@@ -884,6 +966,9 @@
     <layer>
       <gpu:layerFunction>
         <name>Sperm_ProgressiveMovement</name>
+      </gpu:layerFunction>
+      <gpu:layerFunction>
+        <name>Sperm_ProgressiveMovement_EV</name>
       </gpu:layerFunction>
       <gpu:layerFunction>
         <name>Sperm_NonProgressiveMovement</name>
