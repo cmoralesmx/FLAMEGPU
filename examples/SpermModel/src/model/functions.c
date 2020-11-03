@@ -59,53 +59,51 @@ __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 }
 
 __FLAME_GPU_INIT_FUNC__ void preInitialisation(){
-	printf("Extracellular Vesicles, setup from initial state file as follows,\n");
+	printf("\nSperm - EV reaction setup from initial state file as follows,\n");
 	// For how long is the sampling valid or how quickly should the concentration change?
 
-	float v = *get_Const_DetachmentAffectedByExosomes() > 0;
-	printf("[%s] EX - Spermatozoa detachment\n", v ? "true" : "false");
-	if(v){
-		printf("The chance of detaching from the tissue will be affected by Exosome concentration by,\n");
-		printf("- INCREASING, on high concenration\n");
-		printf("- DECREASING, on low concenration\n");
+	float de = *get_Const_DetachmentAffectedByExosomes() > 0;
+	float dm = *get_Const_DetachmentAffectedByMicrovesicles() > 0;
+	float dperc = *get_Const_DetachmentEvEffectPercent();
+	printf("  EX |  MV\n");
+	printf(" [%s] | [%s] - Spermatozoa detachment\n", de ? "t" : "f", dm ? "t" : "f");
+	if(de || dm){
+		printf("The spermatozoa have equal probability of detaching from the epithelial tissue at\n");
+		printf("any given time unless concentration near the spermatozoon is,\n");
+		printf("- HIGH, then the probability of detaching will increase by %d%%\n", (int)(dperc * 100));
+		printf("- LOW, then the probability of detaching will decrease by %d%%\n", (int)(dperc * 100));
+		if(de || dm)
+			printf("\tWARNING: The Spermatozoa detachment should only be affected by one of exosomes or microvesicles\n");
 	}
 
-	float l1 = *get_Const_LifespanAffectedByMicroVesicles() > 0 ;
-	float l2 = *get_Const_LifespanAffectedByExosomes() > 0;
-	if (l1 > 0 && l2 >0){
-		printf("WARNING: The lifespan should only be affected by exosomes or microvesicles\n")
-	}
-	printf("[%s] MV - Spermatozoa lifespan\n", v? "true" : "false");
-	if(v){
-		printf("The spermatozoa have the same expected lifespan at start.\n");
-		printf("It will decrease by 1 second per iteration except if the MICRO VESICLES concentration...\n");
-		printf("- is high, then it will be reduced by 0.5 seconds\n");
-		printf("- is low, then it will be reduced by 2 seconds\n");
-	}
-	printf("[%s] EX - Spermatozoa lifespan\n", v ? "true" : "false");
-	if(v){
-		printf("The spermatozoa have the same expected lifespan at start.\n");
-		printf("It will decrease by 1 second per iteration except if the EXOSOME concentration...\n");
-		printf("- is high, then it will be reduced by 0.5 seconds\n");
-		printf("- is low, then it will be reduced by  2 seconds\n");
+	float le = *get_Const_LifespanAffectedByExosomes() > 0;
+	float lm = *get_Const_LifespanAffectedByMicrovesicles() > 0 ;
+	printf(" [%s] | [%s] - Spermatozoa lifespan\n", le? "t" : "f", lm ? "t" : "f");
+	if(le || lm){
+		printf("\tBy default, The spermatozoon lifespan will decrease 1 second per iteration unless concentration near the spermatozoon is,\n");
+		printf("\t- HIGH, its lifespan will decrease by 0.5 seconds\n");
+		printf("\t- LOW, its lifespan will decrease by 2 seconds\n");
+		if (le && lm)
+			printf("\tWARNING: The lifespan should only be affected by one of exosomes or microvesicles\n");
 	}
 
-	v = *get_Const_ProgressiveMovementAffectedByExosomes() > 0;
-	printf("[%s] EX - Spermatozoa progressive motility.", v ? "true" : "false");
-	if(v){
-		printf(" Accounts for %d%% of the movement possible per time step\n", (int)(100 * *get_Const_PercentVelocityDueToExosomes()));
+	float pme = *get_Const_ProgressiveMovementAffectedByExosomes() > 0;
+	float pmm = *get_Const_ProgressiveMovementAffectedByMicrovesicles() > 0;
+	printf(" [%s] | [%s] - Spermatozoa progressive motility\n", pme? "t" : "f", pmm? "t" : "f");
+	if(pme || pmm){
+		printf("\t%d%% of the spermatozoa motility per time step is due to %s concentration\n", (int)(100 * *get_Const_PercentVelocityDueToEV()), pme? "EX": "MV");
 		float progMot_total = *get_Const_ProgressiveVelocity();
-		float progMot_EX = *get_Const_ProgressiveVelocity() * *get_Const_PercentVelocityDueToExosomes();
-		float progMot_base = progMot_total - progMot_EX;
-		printf("\t\t~ Progressive velocity composition [base: %.2f, due to exosomes: %.2f, total: %.2f] um/s\n", progMot_base, progMot_EX, progMot_total);
+		float progMot_EV = *get_Const_ProgressiveVelocity() * *get_Const_PercentVelocityDueToEV();
+		float progMot_base = progMot_total - progMot_EV;
+		printf("\tProgressive velocity composition\n");
+		printf("\t[base: %.2f, due to EV: %.2f, total: %.2f] um/s\n", progMot_base, progMot_EV, progMot_total);
 		set_Const_BaseProgressiveVelocity(&progMot_base);
+		printf("\tHowever, the actual movement due to EV per timestep will depend \n\ton the sperm exposure to EV concentration");
 	}
-	printf("\n");
 	
 	//Perform the pre-initialisation step - distribute the sperm on the walls
 	singleIteration();
 }
-
 
 __FLAME_GPU_STEP_FUNC__ void updateIterationNo() {
 	unsigned int iter = getIterationNumber();
