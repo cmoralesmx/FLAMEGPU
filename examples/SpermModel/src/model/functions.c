@@ -695,43 +695,25 @@ __FLAME_GPU_FUNC__ int Sperm_SwitchMovementState(xmachine_memory_Sperm* sperm, R
 	return 0;
 }
 
+__FLAME_GPU_FUNC__ int Sperm_RegulateState(xmachine_memory_Sperm* sperm) {
+	if (SpermOutOfBounds()) { return 0; }
+
+	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED) && Const_LifespanAffectedByMicrovesicles > 0) {
+
+		if (--sperm->remainingLifeTime <= 0) {
+			SetActivationState(sperm, ACTIVATION_STATE_DEAD);
+		}
+	}
+	return 0;
+}
 /* 
-	Regulate sperm live
+	Regulate sperm life
 	EV effect: The decrement to apply will depend on the MVs concentration found.
 	- High concentration (>0.75), the decreasing factor will halve (double the lifespan).
 	- Low concentration (<0.25), the decreasing factor will be one
 	- No concentration, the decreasing factor will double (half the lifespan).
 */
-__FLAME_GPU_FUNC__ int Sperm_RegulateState(xmachine_memory_Sperm* sperm) {
-	if (SpermOutOfBounds()) { return 0; }
-
-	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED) && Const_LifespanAffectedByMicrovesicles > 0) {
-		if(sperm->pendingReduction > 0){
-			// high concentration was found in previous step
-			// lifespan was not reduced, must be reduced now
-			sperm->pendingReduction = 0;
-			sperm->remainingLifeTime -= 1;
-		} else {
-			if(sperm->mvsConcentration < 0.25) {
-				// low concentration, double reduction in lifespan
-				sperm->remainingLifeTime -= 2;
-			} else if(sperm->mvsConcentration > 0.75) {
-				// high concentration, half reduction in lifespan
-				// there is no reduction in current step, should be done in next
-				sperm->pendingReduction = 1;
-			} else {
-				// avg concentration, standard reduction in lifespan
-				sperm->remainingLifeTime -= 1;
-			}
-		}
-
-		if (sperm->remainingLifeTime <= 0) {
-			SetActivationState(sperm, ACTIVATION_STATE_DEAD);
-		}
-	}
-	return 0;
-}
-__FLAME_GPU_FUNC__ int Sperm_RegulateState_MicroVesicles(xmachine_memory_Sperm* sperm) {
+__FLAME_GPU_FUNC__ int Sperm_RegulateState_EV(xmachine_memory_Sperm* sperm) {
 	if (SpermOutOfBounds()) { return 0; }
 
 	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED)) {
@@ -741,39 +723,13 @@ __FLAME_GPU_FUNC__ int Sperm_RegulateState_MicroVesicles(xmachine_memory_Sperm* 
 			sperm->pendingReduction = 0;
 			sperm->remainingLifeTime -= 1;
 		} else {
-			if(sperm->mvsConcentration < 0.25) {
+			float evConcentration = Const_LifespanAffectedByExosomes > 0?
+				sperm->exoConcentration : sperm->mvsConcentration;
+
+			if(evConcentration < 0.25) {
 				// low concentration, double reduction in lifespan
 				sperm->remainingLifeTime -= 2;
-			} else if(sperm->mvsConcentration > 0.75) {
-				// high concentration, half reduction in lifespan
-				// there is no reduction in current step, should be done in next
-				sperm->pendingReduction = 1;
-			} else {
-				// avg concentration, standard reduction in lifespan
-				sperm->remainingLifeTime -= 1;
-			}
-		}
-
-		if (sperm->remainingLifeTime <= 0) {
-			SetActivationState(sperm, ACTIVATION_STATE_DEAD);
-		}
-	}
-	return 0;
-}
-__FLAME_GPU_FUNC__ int Sperm_RegulateState_Exosomes(xmachine_memory_Sperm* sperm) {
-	if (SpermOutOfBounds()) { return 0; }
-
-	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED)) {
-		if(sperm->pendingReduction > 0){
-			// high concentration was found in previous step
-			// lifespan was not reduced, must be reduced now
-			sperm->pendingReduction = 0;
-			sperm->remainingLifeTime -= 1;
-		} else {
-			if(sperm->exoConcentration < 0.25) {
-				// low concentration, double reduction in lifespan
-				sperm->remainingLifeTime -= 2;
-			} else if(sperm->exoConcentration > 0.75) {
+			} else if(evConcentration > 0.75) {
 				// high concentration, half reduction in lifespan
 				// there is no reduction in current step, should be done in next
 				sperm->pendingReduction = 1;

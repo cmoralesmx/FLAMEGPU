@@ -898,10 +898,52 @@
         </gpu:function>
         <!-- Sperm_RegulateState (affected by EV mvs) -->
         <gpu:function>
+          <name>Sperm_RegulateState_EV</name>
+          <description>Return to initial state</description>
+          <currentState>final_state</currentState>
+          <nextState>initial_state</nextState>
+          <condition>
+            <lhs>
+              <condition>
+                <lhs><value>Const_LifespanAffectedByExosomes</value></lhs>
+                <operator>&gt;</operator>
+                <rhs><value>0</value></rhs>
+              </condition>
+            </lhs>
+            <operator>||</operator>
+            <rhs>
+              <condition>
+                <lhs><value>Const_LifespanAffectedByMicrovesicles</value></lhs>
+                <operator>&gt;</operator>
+                <rhs><value>0</value></rhs>
+              </condition>
+            </rhs>
+          </condition>
+          <gpu:reallocate>false</gpu:reallocate>
+          <gpu:RNG>false</gpu:RNG>
+        </gpu:function>
+        <gpu:function>
           <name>Sperm_RegulateState</name>
           <description>Return to initial state</description>
           <currentState>final_state</currentState>
           <nextState>initial_state</nextState>
+          <condition>
+            <lhs>
+              <condition>
+                <lhs><value>Const_LifespanAffectedByExosomes</value></lhs>
+                <operator>&lt;</operator>
+                <rhs><value>1</value></rhs>
+              </condition>
+            </lhs>
+            <operator>&amp;&amp;</operator>
+            <rhs>
+              <condition>
+                <lhs><value>Const_LifespanAffectedByMicrovesicles</value></lhs>
+                <operator>&lt;</operator>
+                <rhs><value>1</value></rhs>
+              </condition>
+            </rhs>
+          </condition>
           <gpu:reallocate>false</gpu:reallocate>
           <gpu:RNG>false</gpu:RNG>
         </gpu:function>
@@ -1067,6 +1109,11 @@
     <layer>
       <gpu:layerFunction>
         <name>Sperm_RegulateState</name>
+      </gpu:layerFunction>
+    </layer>
+    <layer>
+      <gpu:layerFunction>
+        <name>Sperm_RegulateState_EV</name>
       </gpu:layerFunction>
     </layer>
   </layers>
