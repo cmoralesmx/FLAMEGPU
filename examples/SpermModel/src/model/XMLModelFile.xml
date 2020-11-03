@@ -197,41 +197,61 @@
         <defaultValue>1199</defaultValue>
       </gpu:variable>
 
-      <!-- effect on lifespan (microvesicles) -->
+      <!-- effect on detachment threshold -->
       <gpu:variable>
         <type>int</type>
-        <name>Const_LifespanAffectedByMicroVesicles</name>
-        <description>Flag to enable the effect of MVs in sperm lifespan</description>
+        <name>Const_DetachmentAffectedByExosomes</name>
+        <description>Flag to enable the effect of Exosomes in sperm detachment</description>
         <defaultValue>0</defaultValue>
       </gpu:variable>
-      <!-- effect on lifespan (exosomes) -->
+      <gpu:variable>
+        <type>int</type>
+        <name>Const_DetachmentAffectedByMicrovesicles</name>
+        <description>Flag to enable the effect of MVs in sperm detachment</description>
+        <defaultValue>0</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>float</type>
+        <name>Const_DetachmentEvEffectPercent</name>
+        <description>Percentage to affect the sperm detachment (0..1)</description>
+        <defaultValue>0.1</defaultValue>
+      </gpu:variable>
+
+      <!-- effect on lifespan -->
       <gpu:variable>
         <type>int</type>
         <name>Const_LifespanAffectedByExosomes</name>
+        <description>Flag to enable the effect of Exosomes in sperm lifespan</description>
+        <defaultValue>0</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>int</type>
+        <name>Const_LifespanAffectedByMicrovesicles</name>
         <description>Flag to enable the effect of MVs in sperm lifespan</description>
         <defaultValue>0</defaultValue>
       </gpu:variable>
-      <!-- effect on Progressive Movement (exosomes) -->
+      
+      <!-- effect on Progressive Movement-->
       <gpu:variable>
         <type>int</type>
         <name>Const_ProgressiveMovementAffectedByExosomes</name>
+        <description>Flag to enable the effect of Exosomes in sperm lifespan</description>
+        <defaultValue>0</defaultValue>
+      </gpu:variable>
+      <gpu:variable>
+        <type>int</type>
+        <name>Const_ProgressiveMovementAffectedByMicrovesicles</name>
         <description>Flag to enable the effect of MVs in sperm lifespan</description>
         <defaultValue>0</defaultValue>
       </gpu:variable>
       <!-- Const_PercentVelocityDueToExosomes -->
       <gpu:variable>
         <type>float</type>
-        <name>Const_PercentVelocityDueToExosomes</name>
+        <name>Const_PercentVelocityDueToEV</name>
         <description>Percentage of progresive velocity attributed to Exosomes</description>
-        <defaultValue>0.6</defaultValue>
+        <defaultValue>0.5</defaultValue>
       </gpu:variable>
-      <!-- effect on detachment threshold (exosomes) -->
-      <gpu:variable>
-        <type>int</type>
-        <name>Const_DetachmentAffectedByExosomes</name>
-        <description>Flag to enable the effect of MVs in sperm lifespan</description>
-        <defaultValue>0</defaultValue>
-      </gpu:variable>
+      
 
       <!-- Const_BaseProgressiveVelocity -->
       <gpu:variable>

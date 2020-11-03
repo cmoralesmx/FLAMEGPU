@@ -499,6 +499,42 @@ __device__ bool SingleProgressiveMovement(xmachine_memory_Sperm* sperm,
 	concentrations provide an stimulous to the progressive movement.
 	
 */
+__FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement_EV(xmachine_memory_Sperm* sperm, 
+	xmachine_message_oocytePosition_list* oocytePositionList, RNG_rand48* rand48) {
+	//Pre cache all oocyte positions in shared memory to allow for multiple iterative loops 
+	// and early exit for out of bounds agents (limitations of flame GPU).
+	GenerateOocytePositionCache(oocytePositionList);
+
+	if (SpermOutOfBounds()) { return 0; }
+
+	Matrix spermMatrix = getTransformationMatrix(sperm);
+	float singleStepDistance, evConcentration;
+	bool resolved;
+
+	singleStepDistance = Const_BaseProgressiveVelocity;
+
+	evConcentration = Const_ProgressiveMovementAffectedByExosomes > 0 ? 
+		sperm->exoConcentration : sperm->mvsConcentration;
+
+	if (evConcentration < 0.25)  {}// low concentration, no movement gain
+	else if(evConcentration > 0.75) // high concentration, extra movement gain
+		singleStepDistance += (1.5 * Const_PercentVelocityDueToEV);
+	else // mid concentration, some movement restored
+		singleStepDistance += (0.5 * Const_PercentVelocityDueToEV);
+	singleStepDistance /= (float)Const_ProgressiveMovementSteps;
+
+	for(int i=0; i < Const_ProgressiveMovementSteps; i++) {
+		resolved = SingleProgressiveMovement(sperm, spermMatrix, rand48, singleStepDistance);
+
+		if (resolved) {
+			break;
+		}
+	}
+	setTransformationMatrix(sperm, spermMatrix);
+
+	return 0;
+}
+
 __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm, 
 	xmachine_message_oocytePosition_list* oocytePositionList, RNG_rand48* rand48) {
 	//Pre cache all oocyte positions in shared memory to allow for multiple iterative loops and early exit for out of bounds agents (limitations of flame GPU).
@@ -507,22 +543,10 @@ __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm,
 	if (SpermOutOfBounds()) { return 0; }
 
 	Matrix spermMatrix = getTransformationMatrix(sperm);
-	float singleStepDistance;
 	bool resolved;
-    if(Const_ProgressiveMovementAffectedByExosomes > 0){
-		singleStepDistance = Const_BaseProgressiveVelocity;
-		if (sperm->exoConcentration < 0.25)  {}// low concentration, no movement gain
-		else if(sperm->exoConcentration > 0.75) // high concentration, extra movement gain
-			singleStepDistance += (1.5 * Const_PercentVelocityDueToExosomes);
-		else // mid concentration, some movement restored
-			singleStepDistance += (0.5 * Const_PercentVelocityDueToExosomes);
-		singleStepDistance /= (float)Const_ProgressiveMovementSteps;
-	} else {
-		singleStepDistance = Const_ProgressiveVelocity / ((float)Const_ProgressiveMovementSteps);
-	}
 
 	for(int i=0; i < Const_ProgressiveMovementSteps; i++) {
-		resolved = SingleProgressiveMovement(sperm, spermMatrix, rand48, singleStepDistance);
+		resolved = SingleProgressiveMovement(sperm, spermMatrix, rand48, Const_ProgressiveVelocity / ((float)Const_ProgressiveMovementSteps));
 
 		if (resolved) {
 			break;
@@ -678,7 +702,7 @@ __FLAME_GPU_FUNC__ int Sperm_SwitchMovementState(xmachine_memory_Sperm* sperm, R
 __FLAME_GPU_FUNC__ int Sperm_RegulateState(xmachine_memory_Sperm* sperm) {
 	if (SpermOutOfBounds()) { return 0; }
 
-	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED) && Const_LifespanAffectedByMicroVesicles > 0) {
+	if (HasState(sperm, ACTIVATION_STATE_CAPACITATED) && Const_LifespanAffectedByMicrovesicles > 0) {
 		if(sperm->pendingReduction > 0){
 			// high concentration was found in previous step
 			// lifespan was not reduced, must be reduced now
