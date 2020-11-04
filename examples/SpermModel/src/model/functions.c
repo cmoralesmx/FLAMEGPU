@@ -59,8 +59,20 @@ __FLAME_GPU_INIT_FUNC__ void copyModelData() {
 }
 
 __FLAME_GPU_INIT_FUNC__ void preInitialisation(){
+	printf(" ==== MAX teoretical concentration ====\n");
+	printf("       Ampulla | Isthmus\n");
+	printf("      Exosomes | %8.1f | %8.1f\n", *get_Const_AmpMaxExoConc(), *get_Const_IsthMaxExoConc());
+	printf("Micro vesicles | %8.1f | %8.1f\n", *get_Const_AmpMaxMvsConc(), *get_Const_IsthMaxMvsConc());
+	printf("\n\n----- This experiment will use ----- \n");
+	printf("               |     mean    sd  (pct) |     mean    sd  (pct) \n");
+	printf("      Exosomes | %8.1f %5.1f (%3.2f) | %8.1f %5.1f (%3.2f) \n", 
+		*get_Const_AmpExoConcMean(), *get_Const_AmpExoConcSDev(), *get_Const_AmpExoConcMean() / *get_Const_AmpMaxExoConc(),
+		*get_Const_IsthExoConcMean(), *get_Const_IsthExoConcSDev(), *get_Const_IsthExoConcMean() / *get_Const_IsthMaxExoConc());
+	printf("Micro vesicles | %8.1f %5.1f (%3.2f) | %8.1f %5.1f (%3.2f) \n",
+		*get_Const_AmpMvsConcMean(), *get_Const_AmpMvsConcSDev(), *get_Const_AmpMvsConcMean() / *get_Const_AmpMaxMvsConc(),
+		*get_Const_IsthMvsConcMean(), *get_Const_IsthMvsConcSDev(), *get_Const_IsthMvsConcMean() / *get_Const_IsthMaxMvsConc());
+
 	printf("\nSperm - EV reaction setup from initial state file as follows,\n");
-	// For how long is the sampling valid or how quickly should the concentration change?
 
 	float de = *get_Const_DetachmentAffectedByExosomes() > 0;
 	float dm = *get_Const_DetachmentAffectedByMicrovesicles() > 0;
@@ -91,7 +103,8 @@ __FLAME_GPU_INIT_FUNC__ void preInitialisation(){
 	float pmm = *get_Const_ProgressiveMovementAffectedByMicrovesicles() > 0;
 	printf(" [%s] | [%s] - Spermatozoa progressive motility\n", pme? "t" : "f", pmm? "t" : "f");
 	if(pme || pmm){
-		printf("\t%d%% of the spermatozoa motility per time step is due to %s concentration\n", (int)(100 * *get_Const_PercentVelocityDueToEV()), pme? "EX": "MV");
+		printf("\t%d%% of the spermatozoa motility per time step is due to %s concentration\n", 
+			(int)(100.0f * *get_Const_PercentVelocityDueToEV()), pme? "EX": "MV");
 		float progMot_total = *get_Const_ProgressiveVelocity();
 		float progMot_EV = *get_Const_ProgressiveVelocity() * *get_Const_PercentVelocityDueToEV();
 		float progMot_base = progMot_total - progMot_EV;
@@ -557,6 +570,14 @@ __FLAME_GPU_FUNC__ int Sperm_ProgressiveMovement(xmachine_memory_Sperm* sperm,
 	return 0;
 }
 
+/*
+  EV concentration sampling
+  1. Identify in what oviduct section is the sperm based on the oviductSegment value
+  2. Fetch the EX and MV concentration mean and sd for the identified section
+  3. Do a Box-Muller transform to sample a normally distributed value
+  4. Transform values using the mean and Sd fetched earlier
+  5. compute the concentration coefficient
+*/
 __FLAME_GPU_FUNC__ int Sperm_SampleEvConcentration(xmachine_memory_Sperm* sperm, RNG_rand48* rand48){
 	float exo_rn, mvs_rn;
 	float exo_max_conc, mvs_max_conc;
@@ -583,11 +604,12 @@ __FLAME_GPU_FUNC__ int Sperm_SampleEvConcentration(xmachine_memory_Sperm* sperm,
 	float r = sqrtf(-2.0 * log(rnd<CONTINUOUS>(rand48)));
 	float a = 2 * rnd<CONTINUOUS>(rand48);
 
+	// what concentration coefficient
 	exo_rn = exo_mean +( exo_sd * r * cospif(a));
 	mvs_rn = mvs_mean +( mvs_sd * r * sinpif(a));
 
-	sperm->exoConcentration = exo_rn > exo_max_conc ? exo_max_conc : exo_rn;
-	sperm->mvsConcentration = mvs_rn > mvs_max_conc ? mvs_max_conc : mvs_rn;
+	sperm->exoConcentration = exo_rn / exo_max_conc;
+	sperm->mvsConcentration = mvs_rn / mvs_max_conc;
 	
 	return 0;
 }
